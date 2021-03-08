@@ -245,3 +245,73 @@ def random_action_finder(grid, robot_pos, sample_size):
     # Return best action vector and the reward
     return action_space[best_samp], reward_list[best_samp]  
 
+def centralized_greedy_action_finder(grid, robot_pos, fov):
+    '''
+    Function to greedily find actions for all robot.
+    For a robot, find an action which results in covring most number of targets.
+    Remove the targets from the grid.
+    Repeat for next robot.
+
+    Parameters
+    ----------
+        grid: 2D grid containing rewards
+        robot_pos: Current position for each robot on the grid (NUM_ROBOTx2 size vector)
+        fov: Field of View in each direction. FOV=2 results in 5x5 grid centered at robot location
+        
+    Returns
+    -------
+        robot_acts: List of actions for each robot
+        reward: Reward over the greedy 
+    '''
+    # Copy teh original grid for later use
+    orig_grid = grid.copy()
+    # List of actions
+    act_list = ['Stay', 'Up', 'Down', 'Left', 'Right']
+    # List to save the actiosn for each robot
+    robot_acts = []
+    # Array to save the robot locations
+    new_pos = np.zeros(robot_pos.shape, dtype=robot_pos.dtype)
+
+    # Iterate over each robot
+    for i_rob in range(len(robot_pos)):
+        # List to save reward for each action
+        reward_list = []
+        
+        # iterate over each action
+        for i_act, act in enumerate(act_list):
+            # Copy the grid to avoid overwriting
+            test_grid = grid.copy()
+            # Move robot to new location according to the action
+            r_pos = robot_pos[i_rob] + DIR_DICT[i_act]
+            # Keep the robot within the grid by limiting x-y coordinated in range [9,grid size)
+            r_pos = r_pos.clip(min=0, max=GRID_SIZE-1)
+
+            # Find reward. It is the number of total targets in robot's FOV
+            reward = np.sum(test_grid[max(0,r_pos[0]-FOV):min(r_pos[0]+FOV+1,GRID_SIZE),
+                                max(0,r_pos[1]-FOV):min(r_pos[1]+FOV+1,GRID_SIZE)])
+            # Add the reward to teh list
+            reward_list.append(reward)
+        
+        # Find the best action = argmax(reward list)
+        best_act = np.argmax(reward_list)
+        # Save this action as the Robot's action as per greedy algorithm
+        robot_acts.append(best_act)
+        
+        # Apply action to the currect robot. Move to new location
+        r_pos = robot_pos[i_rob] + DIR_DICT[best_act]
+        # Save the new location
+        new_pos[i_rob] = r_pos
+
+        # Remove the targets within Robot's field of view
+        test_grid[max(0,r_pos[0]-FOV):min(r_pos[0]+FOV+1,GRID_SIZE),
+                    max(0,r_pos[1]-FOV):min(r_pos[1]+FOV+1,GRID_SIZE)] = 0
+        
+        # Update the grid
+        grid = test_grid.copy()
+
+    # Find the reward of the actions
+    reward = calculate_reward(orig_grid, robot_pos, robot_acts)
+
+    # return robot_acts, new_pos, reward
+    return robot_acts, reward
+
