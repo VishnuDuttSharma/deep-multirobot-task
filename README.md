@@ -8,6 +8,7 @@ TO-DO:
 - [ ] Input includes relative locations of targets (euqal value) and robots within big square FoV. Big square: larger than fov (2 + tracking length), sweep the targets on FoV
 - [x] Check this first. define communication range. Adjacency matrix for each instance. If any robot is not connected to another discard that instance
 - [ ] Using GNN
+- [ ]   L = 1 (1 layer GNN)
 - [ ] Example test for overlaps of robots
 - [ ] 
 
