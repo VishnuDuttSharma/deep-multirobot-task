@@ -7,8 +7,10 @@ TO-DO:
 - [x] Greedy (actions providing maxmimal marginal gain) f(S union {a}) - f(S), S = S union {e}, and random sampled action (say 1000 samples, each robot has one action). Confirm with Lifeng 
 - [x] Input includes relative locations of targets (euqal value) and robots within big square FoV. Big square: larger than fov (2 + tracking length), sweep the targets on FoV
 - [x] Check this first. define communication range. Adjacency matrix for each instance. If any robot is not connected to another discard that instance
-- [ ] Using GNN
-  - [ ]   L = 1 (1 layer GNN)
 - [x] Example test for overlaps of robots
+- [ ] Create data pipeline
+- [ ] Create dataloader 
+- [ ] Run GNN
+  - [ ]   L = 1 (1 layer GNN)
 
 
