@@ -393,7 +393,7 @@ def get_features(grid, robot_pos, fov=FOV, step=STEP_SIZE, target_feat_size=10, 
     # Get number of robots
     num_rob = NUM_ROBOT
     # Create an empty vector for features. size: N_Robot x (targets + robot) x 2
-    feat_vec = np.zeros((num_rob, target_feat_size + robot_feat_size, 2))
+    feat_vec = -1*np.ones((num_rob, target_feat_size + robot_feat_size, 2))
 
     # Iterate over each robot
     for i_rob in range(num_rob):
@@ -414,22 +414,24 @@ def get_features(grid, robot_pos, fov=FOV, step=STEP_SIZE, target_feat_size=10, 
         # Get locatiosn where a target is present
         rows, cols = np.where(mask*grid > 0)
         # get relative position and normalize. (.T returns the tranpose of the matrix)
-        rel_pos = np.array([rows - c_pos[0], cols - c_pos[1]]).T / fov
+        rel_pos = np.array([rows - c_pos[0], cols - c_pos[1]]).T / (fov+step)
         # Get the sorting indices (lowest to highest). Sort based on on relative distance
         indices = np.argsort(np.linalg.norm(rel_pos, axis=1))
 
-        # Save the relative locations in feature vector.
-        feat_vec[i_rob, :min(target_feat_size, len(indices)), :] = rel_pos[:min(target_feat_size, len(indices))]
+        # Save the relative normalized locations of the targets in feature vector.
+        feat_vec[i_rob, 0:min(target_feat_size, len(indices)), :] = rel_pos[indices][0:min(target_feat_size, len(indices))]
 
         ### For robots
         # Get relative location on all robots
         rel_pos = robot_pos - c_pos
         # Get the subset containing only those robots which are within robot's FOV. Also normalize them
-        rel_pos_subset =  rel_pos[ (np.abs(rel_pos[:,0]) <= FOV) & (np.abs(rel_pos[:,1]) <= FOV)] / fov
+        rel_pos_subset =  rel_pos[ (np.abs(rel_pos[:,0]) <= (fov+step)) & (np.abs(rel_pos[:,1]) <= (fov+step))] / (fov+step)
         # Get the sorting indices (lowest to highest). Sort based on on relative distance
         indices = np.argsort(np.linalg.norm(rel_pos_subset, axis=1))
         # First elemnt (index=0) is the robot it self. Thus remove it from the list
-        indices = indices[1:]
+        rel_pos = rel_pos[indices]
+        rel_pos = rel_pos[1:]
+        
         # Save into the feature vector
         feat_vec[i_rob, target_feat_size:target_feat_size+min(robot_feat_size, len(indices)), :] = rel_pos[:min(robot_feat_size, len(indices))]
         
