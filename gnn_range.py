@@ -431,6 +431,7 @@ def get_features(grid, robot_pos, fov=FOV, step=STEP_SIZE, target_feat_size=10, 
         # First elemnt (index=0) is the robot it self. Thus remove it from the list
         rel_pos = rel_pos[indices]
         rel_pos = rel_pos[1:]
+        indices = indices[1:]
         
         # Save into the feature vector
         feat_vec[i_rob, target_feat_size:target_feat_size+min(robot_feat_size, len(indices)), :] = rel_pos[:min(robot_feat_size, len(indices))]
