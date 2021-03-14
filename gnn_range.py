@@ -3,7 +3,7 @@ from constants import *
 
 def get_adjacency_matrix(robot_pos, comm_range):
     '''
-    Function to get the adjacency matrix
+    Function to get the adjacency matrix )normalized by max eigen value)
 
     Parameters
     ----------
@@ -12,7 +12,7 @@ def get_adjacency_matrix(robot_pos, comm_range):
     
     Returns
     -------
-        adj_mat: 2D array (symmetric) containing  1s and 0s to indicate if two nodes are connected
+        adj_mat: 2D array (symmetric) 
     '''
     # Get the number of robots
     num_rob = len(robot_pos)
@@ -29,11 +29,15 @@ def get_adjacency_matrix(robot_pos, comm_range):
     # If distance between robots is out of communucation range, set it to 0
     adj_mat[adj_mat > comm_range] = 0.
     # Convert the non-zero values to 1 (distance between robots <= communication range)
-    adj_mat = (adj_mat > 0).astype(int)
+    adj_mat = (adj_mat > 0).astype(float)
 
+    # Normalize the adj matrix by its mox eigen value
+    max_eig_val = np.max(np.linalg.eigvals(adj_mat))
+    adj_mat = adj_mat.astype(float) / max_eig_val
+    
     return adj_mat
 
-def get_initial_pose(grid):
+def get_initial_pose(grid, comm_range):
     """
     Function to generate initial positions for the robots. 
     For this we keep generating random locations on the grid till each robot 
@@ -65,9 +69,18 @@ def get_initial_pose(grid):
     for idx, indc in enumerate(cand_indices):
         initial_pos[idx,:] = np.array(indices[indc])
     '''
-
-    # Generate random location for each robot
-    initial_pos = np.random.randint(low=0, high=grid.shape[0], size=(num_robot, 2))
+    
+    degree_lt_1 = True
+    while(degree_lt_1):
+        # Generate random location for each robot
+        initial_pos = np.random.randint(low=0, high=grid.shape[0], size=(num_robot, 2))
+        
+        # get corresponding adjacency matrix
+        adj_mat = get_adjacency_matrix(robot_pos, comm_range)
+        
+        # Check minimum degree. (degree_lt_1 = is any robot connected to 0 robots)
+        degree_lt_1 = ((adj_mat > 0).sum(axis=0) == 0).any()
+        
     # Remove the rewards from the grid at robots' locations
     for pos in initial_pos:
         grid[pos[0], pos[1]] = 0
