@@ -85,7 +85,7 @@ def get_initial_pose(grid, comm_range):
     for pos in initial_pos:
         grid[pos[0], pos[1]] = 0
 
-    return initial_pos
+    return initial_pos, adj_mat
 
 def get_reward_grid(height, width, reward_thresh=REWARD_THRESH):
     """
@@ -386,7 +386,7 @@ def centralized_greedy_action_finder(grid, robot_pos, fov):
     return robot_acts, reward
 
 
-def get_features(grid, robot_pos, fov=FOV, step=STEP_SIZE, target_feat_size=10, robot_feat_size=10):
+def get_features(grid, robot_pos, fov=FOV, step=STEP, target_feat_size=10, robot_feat_size=10):
     '''
     Function to get the features (local position of robot in fov) 
 
