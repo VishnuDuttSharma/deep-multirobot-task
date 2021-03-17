@@ -52,7 +52,7 @@ def get_initial_pose(grid, comm_range):
         initial_pos: Vector of size NUM_ROBOTx2 containing positions for each robot
     """
     # Find number of robots
-    num_robot = grid.shape[0]
+    num_robot = NUM_ROBOT
 
     '''
     # Get indices of those rows and columns which are not-occupied (=0 on grid)
@@ -76,7 +76,7 @@ def get_initial_pose(grid, comm_range):
         initial_pos = np.random.randint(low=0, high=grid.shape[0], size=(num_robot, 2))
         
         # get corresponding adjacency matrix
-        adj_mat = get_adjacency_matrix(robot_pos, comm_range)
+        adj_mat = get_adjacency_matrix(initial_pos, comm_range)
         
         # Check minimum degree. (degree_lt_1 = is any robot connected to 0 robots)
         degree_lt_1 = ((adj_mat > 0).sum(axis=0) == 0).any()
