@@ -29,7 +29,7 @@ class GNNCoverageDataLoader:
                                            num_workers=self.config.data_loader_workers,
                                            pin_memory=self.config.pin_memory)
             
-            self.valid_loader = DataLoader(valid_set, batch_size=self.config.valid_batch_size, shuffle=True,
+            self.validStep_loader = DataLoader(valid_set, batch_size=self.config.valid_batch_size, shuffle=True,
                                            num_workers=self.config.data_loader_workers,
                                            pin_memory=self.config.pin_memory)
         elif config.mode == "test":
