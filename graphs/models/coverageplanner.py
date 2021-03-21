@@ -15,7 +15,7 @@ class CoveragePlannerNet(nn.Module):
         self.numAgents = self.config.num_agents
         # inW = self.config.map_w
         # inH = self.config.map_h
-        numFeatures = (self.tgt_feat + self.rbt_feat)*2
+        numFeatures = (self.config.tgt_feat + self.config.rbt_feat)*2
         numAction = 5
         # ------------------ DCP v1.5  -  no CNN- less feature
         dimCompressMLP = 2
