@@ -248,18 +248,18 @@ class CoveragePlannerAgentLocal(BaseAgent):
             rateReachGoal = 0.0
             if self.config.num_agents >= 10:
                 if epoch % self.config.validate_every == 0:
-                    rateReachGoal = self.test(self.config.mode)
+                    # rateReachGoal = self.test(self.config.mode)
                     # self.test('test_trainingSet')
                     self.test_step()
                     self.save_checkpoint(epoch, lastest=False)
             else:
                 if epoch <= 4:
-                    rateReachGoal = self.test(self.config.mode)
+                    # rateReachGoal = self.test(self.config.mode)
                     # self.test('test_trainingSet')
                     self.test_step()
                     self.save_checkpoint(epoch, lastest=False)
                 elif epoch % self.config.validate_every == 0:
-                    rateReachGoal =  self.test(self.config.mode)
+                    # rateReachGoal =  self.test(self.config.mode)
                     # self.test('test_trainingSet')
                     self.test_step()
                     self.save_checkpoint(epoch, lastest=False)
