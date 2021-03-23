@@ -1,6 +1,9 @@
 import numpy as np
 from constants import *
 
+def check_symmetric(a, rtol=1e-05, atol=1e-08):
+    return np.allclose(a, a.T, rtol=rtol, atol=atol)
+
 def get_adjacency_matrix(robot_pos, comm_range):
     '''
     Function to get the adjacency matrix )normalized by max eigen value)
@@ -31,9 +34,15 @@ def get_adjacency_matrix(robot_pos, comm_range):
     # Convert the non-zero values to 1 (distance between robots <= communication range)
     adj_mat = (adj_mat > 0).astype(float)
 
+
     # Normalize the adj matrix by its mox eigen value
-    max_eig_val = np.max(np.linalg.eigvals(adj_mat))
+    max_eig_val = np.real(np.max(np.linalg.eigvals(adj_mat))) # abs to tackle complex numbers
+    # if max_eig_val == 0:
+    #     print(robot_pos)
+    #     print(adj_mat)
+    
     adj_mat = adj_mat.astype(float) / max_eig_val
+    # print(max_eig_val)
     
     return adj_mat
 
@@ -71,6 +80,7 @@ def get_initial_pose(grid, comm_range):
     '''
     
     degree_lt_1 = True
+    is_symm = False
     while(degree_lt_1):
         # Generate random location for each robot
         initial_pos = np.random.randint(low=0, high=grid.shape[0], size=(num_robot, 2))
@@ -80,6 +90,8 @@ def get_initial_pose(grid, comm_range):
         
         # Check minimum degree. (degree_lt_1 = is any robot connected to 0 robots)
         degree_lt_1 = ((adj_mat > 0).sum(axis=0) == 0).any()
+        # if not degree_lt_1:
+        #     print('Generating again')
         
     # Remove the rewards from the grid at robots' locations
     for pos in initial_pos:
