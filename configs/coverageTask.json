@@ -3,16 +3,16 @@
   "agent": "CoveragePlannerAgentLocal",
   "data_loader": "GNNCoverageDataLoader",
 
-  "data_root": "/content/drive/MyDrive/Research/multi_robot/gnn_data/",
-  "save_data": "/local/scratch/ql295/Data/MultiAgentDataset/",
-  "save_tb_data": "/local/scratch/ql295/Data/MultiAgentDataset/Tensorboard_CG50/",
+  "data_root": "/content/drive/MyDrive/Research/multi_robot/gnn_1000/gnn_data/",
+  "save_data": "/content/drive/MyDrive/Research/multi_robot/gnn_1000/gnn_log_data/",
+  "save_tb_data": "/content/drive/MyDrive/Research/multi_robot/gnn_1000/gnn_tb_data/",
 
   "map_w": 20,
   "map_h": 20,
   "map_density": 1,
   "num_agents": 10,
   "id_map": 0,
-  "tgt_feat": 10,
+  "tgt_feat": 20,
   "rbt_feat": 10,
 
   "trained_map_w": 20,
@@ -41,7 +41,7 @@
   "weight_decay": 0.00001,
   "momentum": 0.5,
   "penaltyCollision": 0.05,
-  "max_epoch": 150,
+  "max_epoch": 1000,
   "Start_onlineExpert": 0,
 
   "log_interval": 500,
@@ -52,6 +52,6 @@
   "async_loading": true,
 
   "batch_size": 64,
-  "valid_batch_size": 1,
+  "valid_batch_size": 64,
   "test_batch_size": 1
 }
