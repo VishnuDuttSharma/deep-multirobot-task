@@ -1,5 +1,5 @@
 import numpy as np
-from utils.dataloader.constants import *
+from dataloader.constants import *
 
 def check_symmetric(a, rtol=1e-05, atol=1e-08):
     return np.allclose(a, a.T, rtol=rtol, atol=atol)
