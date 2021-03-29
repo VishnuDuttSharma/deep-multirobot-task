@@ -97,13 +97,13 @@ def plot_function(grid, robot_pos, gt_act, predict_act, random_act):
     plt.title(f'Random: {rndm_rwd}', fontsize= 20)
     # plt.suptitle('Reward calculation', fontsize= 20);
 
-def get_accuracy(config, agent):
-    dataloader = agent.data_loader.test_loader
+def get_accuracy(config, agent, data_loader):
+    # data_loader = agent.data_loader.test_loader
     gt_list_long, pred_list_long = [], []
 
     agent.model.eval();
 
-    for batch_idx, (batch_input, batch_GSO, batch_target) in enumerate(dataloader):
+    for batch_idx, (batch_input, batch_GSO, batch_target) in enumerate(data_loader):
         inputGPU = batch_input.to(config.device)
         gsoGPU = batch_GSO.to(config.device)
         # gsoGPU = gsoGPU.unsqueeze(0)
