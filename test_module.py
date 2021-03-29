@@ -80,21 +80,41 @@ def calculate_test_reward(grid, robot_pos, action_list):
     
     return total_reward, mask
 
-def plot_function(grid, robot_pos, gt_act, predict_act, random_act):
+def plot_function(grid, robot_pos, gt_act, predict_act, random_act, greedy=True):
     gt_rwd, gt_mask = calculate_test_reward(grid, robot_pos, gt_act)
     pred_rwd, pred_mask = calculate_test_reward(grid, robot_pos, predict_act)
     rndm_rwd, rndm_mask = calculate_test_reward(grid, robot_pos, random_act)
+    num_row = 1
+    num_col = 3
 
-    plt.figure(figsize=(12,6));
-    plt.subplot(1,3,1);
+    if greedy:
+        cent_act, cent_rwd = centralized_greedy_action_finder(grid, robot_pos, fov=FOV)
+        cent_rwd, cent_mask = calculate_test_reward(grid, robot_pos, cent_act)
+        num_row = 2
+        num_col = 2
+
+    
+    
+    if greedy:
+        plt.figure(figsize=(7,8))
+    else:
+        plt.figure(figsize=(12,6));
+
+    plt.subplot(num_row,num_col,1);
     plt.imshow(gt_mask);
     plt.title(f'GT: {gt_rwd}', fontsize= 20)
-    plt.subplot(1,3,2);
+    plt.subplot(num_row,num_col,2);
     plt.imshow(pred_mask);
     plt.title(f'Prediction: {pred_rwd}', fontsize= 20)
-    plt.subplot(1,3,3);
+    plt.subplot(num_row,num_col,3);
     plt.imshow(rndm_mask);
     plt.title(f'Random: {rndm_rwd}', fontsize= 20)
+    
+    if greedy:
+        plt.subplot(num_row,num_col, 4)
+        plt.imshow(cent_mask);
+        plt.title(f'C. Greedy: {cent_rwd}', fontsize=20)
+    
     # plt.suptitle('Reward calculation', fontsize= 20);
 
 def get_accuracy(config, agent, data_loader):
