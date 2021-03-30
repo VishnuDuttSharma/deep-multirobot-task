@@ -5,6 +5,8 @@ import torch
 from dataloader.constants import *
 from dataloader.gnn_setup import *
 
+from graphs.losses.cross_entropy import CrossEntropyLoss
+
 def generate_data(data_size):
     feat_list, adj_list, label_list = [], [], []
     grid_list  = []
@@ -189,3 +191,47 @@ def main(config, agent, num_example=5):
 
     return grid_list, robot_pos_list, gt_act_list, predict_ind, random_acts
 
+def get_acc_n_loss(config, agent, data_loader):
+    # data_loader = agent.data_loader.test_loader
+    gt_list_long, pred_list_long = [], []
+
+    agent.model.eval();
+    
+    loss_fn = CrossEntropyLoss()
+    loss_fn = loss_fn.to(config.device)
+
+    with torch.no_grad():
+        for batch_idx, (batch_input, batch_GSO, batch_target) in enumerate(data_loader):
+            inputGPU = batch_input.to(config.device)
+            gsoGPU = batch_GSO.to(config.device)
+            # gsoGPU = gsoGPU.unsqueeze(0)
+            targetGPU = batch_target.to(config.device)
+            batch_targetGPU = targetGPU.permute(1, 0, 2)
+            agent.optimizer.zero_grad()
+
+            
+            # model
+            agent.model.addGSO(gsoGPU)
+            predict = agent.model(inputGPU)
+            
+            gt_list_long.append(targetGPU.detach().cpu().numpy())
+            pred_list_long.append(np.array([p.detach().cpu().numpy() for p in predict]).transpose(1,0,2))
+
+            loss_val = 0
+
+            for id_agent in range(NUM_ROBOT):
+            # for output, target in zip(predict, target):
+                batch_predict_currentAgent = predict[id_agent][:]
+                batch_target_currentAgent = batch_targetGPU[id_agent][:][:]
+                loss_val = loss_val + loss_fn(batch_predict_currentAgent,  torch.max(batch_target_currentAgent, 1)[1])
+
+    np.concatenate(gt_list_long, axis=0).shape, np.concatenate(pred_list_long, axis=0).shape
+    gt_idxs = np.concatenate(gt_list_long, axis=0).argmax(axis=2)
+    pred_idxs = np.concatenate(pred_list_long, axis=0).argmax(axis=2)
+
+    accuracy = (gt_idxs == pred_idxs).sum()/(len(gt_idxs)*NUM_ROBOT)
+    
+    loss_val = loss_val/NUM_ROBOT
+    log_loss = loss_val.item()
+
+    return accuracy, log_loss
