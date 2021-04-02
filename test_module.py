@@ -1,6 +1,8 @@
 import numpy as np
 from matplotlib import pyplot as plt
 import torch
+import torch.nn.functional as F
+from scipy.special import softmax
 
 from dataloader.constants import *
 from dataloader.gnn_setup import *
@@ -235,3 +237,47 @@ def get_acc_n_loss(config, agent, data_loader):
     log_loss = loss_val.item()
 
     return accuracy, log_loss
+
+def get_stoc_acc(config, agent, data_loader):
+    # data_loader = agent.data_loader.test_loader
+    gt_list_long, pred_list_long = [], []
+
+    agent.model.eval();
+    
+    with torch.no_grad():
+        for batch_idx, (batch_input, batch_GSO, batch_target) in enumerate(data_loader):
+            inputGPU = batch_input.to(config.device)
+            gsoGPU = batch_GSO.to(config.device)
+            # gsoGPU = gsoGPU.unsqueeze(0)
+            targetGPU = batch_target.to(config.device)
+            batch_targetGPU = targetGPU.permute(1, 0, 2)
+            agent.optimizer.zero_grad()
+
+            
+            # model
+            agent.model.addGSO(gsoGPU)
+            predict = agent.model(inputGPU)
+            
+
+            gt_list_long.append(targetGPU.detach().cpu().numpy())
+            pred_list_long.append(np.array([F.softmax(p, dim=1).detach().cpu().numpy() for p in predict]).transpose(1,0,2))
+
+
+    np.concatenate(gt_list_long, axis=0).shape, np.concatenate(pred_list_long, axis=0).shape
+    gt_idxs = np.concatenate(gt_list_long, axis=0)
+    gt_idxs = gt_idxs.reshape(-1,5).argmax(axis=1)
+    # print(gt_idxs[0:4])
+    
+    
+    # gt_idxs = gt_idxs.argmax(axis=2)
+    pred_idxs = np.concatenate(pred_list_long, axis=0)
+    pred_idxs = pred_idxs.reshape(-1,5)
+    # print(pred_idxs[0:4])
+    pred_idxs = np.array([np.random.choice(np.arange(5), p=logit) for logit in pred_idxs])
+    # print(pred_idxs.shape)
+    # pred_idxs = pred_idxs.argmax(axis=2)
+
+    accuracy = (gt_idxs == pred_idxs).sum()/(len(gt_idxs))
+    
+    
+    return accuracy
