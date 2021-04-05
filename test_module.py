@@ -2,7 +2,6 @@ import numpy as np
 from matplotlib import pyplot as plt
 import torch
 import torch.nn.functional as F
-from scipy.special import softmax
 
 from dataloader.constants import *
 from dataloader.gnn_setup import *
@@ -277,6 +276,65 @@ def get_stoc_acc(config, agent, data_loader):
     # print(pred_idxs.shape)
     # pred_idxs = pred_idxs.argmax(axis=2)
 
+    accuracy = (gt_idxs == pred_idxs).sum()/(len(gt_idxs))
+    
+    
+    return accuracy
+
+
+def convert_to_action(pred_list):
+    preds = torch.zeros(pred_list[0].shape[0], len(pred_list), pred_list[0].shape[1])
+    for itr in range(len(pred_list)):
+        preds[:,itr,:] = pred_list[itr]
+    
+    preds = F.softmax(preds, dim=2)
+
+    action_ids = torch.zeros((preds.shape[:2]), dtype=torch.long)
+    
+    for itr in range(preds.shape[1]):
+        action_ids[:,itr] = torch.multinomial(preds[:,itr,:], 1)[:,0]
+
+    return action_ids
+
+def get_stoc_acc2(config, agent, data_loader):
+    # data_loader = agent.data_loader.test_loader
+    gt_list_long, pred_list_long = [], []
+
+    agent.model.eval();
+    
+    with torch.no_grad():
+        for batch_idx, (batch_input, batch_GSO, batch_target) in enumerate(data_loader):
+            inputGPU = batch_input.to(config.device)
+            gsoGPU = batch_GSO.to(config.device)
+            # gsoGPU = gsoGPU.unsqueeze(0)
+            targetGPU = batch_target.to(config.device)
+            batch_targetGPU = targetGPU.permute(1, 0, 2)
+            agent.optimizer.zero_grad()
+
+            
+            # model
+            agent.model.addGSO(gsoGPU)
+            predict = agent.model(inputGPU)
+            # print(len(predict), predict[0].shape)
+            probs = convert_to_action(predict)
+            
+            gt_list_long.append(targetGPU.detach().cpu().numpy())
+            pred_list_long.append(probs.detach().cpu().numpy().astype(int))
+
+            # print(np.concatenate(pred_list_long).shape)
+            # return 0
+
+    # np.concatenate(gt_list_long, axis=0).shape, np.concatenate(pred_list_long, axis=0).shape
+    gt_idxs = np.concatenate(gt_list_long, axis=0)
+    gt_idxs = gt_idxs.reshape(-1,5).argmax(axis=1)
+    # print(gt_idxs[0:4])
+    
+    
+    # gt_idxs = gt_idxs.argmax(axis=2)
+    pred_idxs = np.concatenate(pred_list_long, axis=0).astype(int)
+    pred_idxs = pred_idxs.reshape(-1,)
+    # print(pred_idxs[0:4])
+    
     accuracy = (gt_idxs == pred_idxs).sum()/(len(gt_idxs))
     
     
