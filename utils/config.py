@@ -84,6 +84,9 @@ def process_config(args):
     config.trained_map_density = args.trained_map_density
     config.trained_map_type = args.trained_map_type
 
+    config.tgt_feat = args.tgt_feat
+    config.rbt_feat = args.rbt_feat
+    
     config.nGraphFilterTaps = args.nGraphFilterTaps
     config.hiddenFeatures = args.hiddenFeatures
 
