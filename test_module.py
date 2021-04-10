@@ -200,7 +200,7 @@ def get_acc_n_loss(config, agent, data_loader):
     
     loss_fn = CrossEntropyLoss()
     loss_fn = loss_fn.to(config.device)
-
+    
     with torch.no_grad():
         for batch_idx, (batch_input, batch_GSO, batch_target) in enumerate(data_loader):
             inputGPU = batch_input.to(config.device)
@@ -210,7 +210,7 @@ def get_acc_n_loss(config, agent, data_loader):
             batch_targetGPU = targetGPU.permute(1, 0, 2)
             agent.optimizer.zero_grad()
 
-            
+            # print('Data shapes: ', inputGPU.shape, gsoGPU.shape) 
             # model
             agent.model.addGSO(gsoGPU)
             predict = agent.model(inputGPU)
@@ -219,7 +219,8 @@ def get_acc_n_loss(config, agent, data_loader):
             pred_list_long.append(np.array([p.detach().cpu().numpy() for p in predict]).transpose(1,0,2))
 
             loss_val = 0
-
+            
+            # print(NUM_ROBOT, len(predict))
             for id_agent in range(NUM_ROBOT):
             # for output, target in zip(predict, target):
                 batch_predict_currentAgent = predict[id_agent][:]
