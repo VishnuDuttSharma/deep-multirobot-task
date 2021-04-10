@@ -289,7 +289,9 @@ class CoveragePlannerAgentLocal(BaseAgent):
             gsoGPU = batch_GSO.to(self.config.device)
             # gsoGPU = gsoGPU.unsqueeze(0)
             targetGPU = batch_target.to(self.config.device)
-            batch_targetGPU = targetGPU.permute(1,0,2)
+            # Should not permute BxNXA to NxBxA as it would given incorrect flatten output during loss calculation
+            # batch_targetGPU = targetGPU.permute(1,0,2)
+            batch_targetGPU = targetGPU
             self.optimizer.zero_grad()
 
             # loss
@@ -300,14 +302,25 @@ class CoveragePlannerAgentLocal(BaseAgent):
             self.model.addGSO(gsoGPU)
             # print(inputGPU.shape)
             predict = self.model(inputGPU)
+            
 
+            # make sure that non-flattened variables to loss are same shaped
+            assert predict.shape == batch_targetGPU.shape
+            # Get number of actions
+            num_act = predict.shape[-1]
+            # Find loss on flattened features to save time
+            loss = loss + self.loss(predict.reshape(-1, num_act),
+                                torch.max(batch_targetGPU.reshape(-1, num_act), 1)[1])
 
+            '''
+            # Old method
             for id_agent in range(self.config.num_agents):
             # for output, target in zip(predict, target):
                 batch_predict_currentAgent = predict[id_agent][:]
                 batch_target_currentAgent = batch_targetGPU[id_agent][:][:]
                 loss = loss + self.loss(batch_predict_currentAgent,  torch.max(batch_target_currentAgent, 1)[1])
                 # print(loss)
+            '''
 
             loss = loss/self.config.num_agents
 
@@ -377,13 +390,19 @@ class CoveragePlannerAgentLocal(BaseAgent):
                     step_targetGPU = targetGPU[step][:]
 
                     step_gsoGPU = gsoGPU[step][:]
-                    step_targetGPU = step_targetGPU.permute(1, 0, 2)
+                    # step_targetGPU = step_targetGPU.permute(1, 0, 2)
                     self.optimizer.zero_grad()
 
                     # model
                     self.model.addGSO(step_gsoGPU)
                     step_predict = self.model(step_inputGPU)
-
+                    
+                    num_act = step_targetGPU.shape[-1]
+                    loss = self.loss(batch_predict_currentAgent.reshape(-1, num_act),
+                                        torch.max(batch_target_currentAgent.reshape(-1, num_act), 1)[1]) / self.config.num_agents
+                    
+                    '''
+                    # old loss function 
                     for id_agent in range(self.config.num_agents):
                         # for output, target in zip(predict, target):
                         batch_predict_currentAgent = step_predict[id_agent][:]
@@ -391,7 +410,7 @@ class CoveragePlannerAgentLocal(BaseAgent):
                         loss = loss + self.loss(batch_predict_currentAgent,
                                                 torch.max(batch_target_currentAgent, 1)[1]) / self.config.num_agents
                         # print(loss)
-
+                    '''
 
                 # optimizer
                 loss.backward()
@@ -444,7 +463,9 @@ class CoveragePlannerAgentLocal(BaseAgent):
             gsoGPU = batch_GSO.to(self.config.device)
             # gsoGPU = gsoGPU.unsqueeze(0)
             targetGPU = batch_target.to(self.config.device)
-            batch_targetGPU = targetGPU.permute(1, 0, 2)
+            # Should not permute B x N x A to N x B x A, else it would give incorrect loss with flattened input
+            # batch_targetGPU = targetGPU.permute(1, 0, 2)
+            batch_targetGPU = targetGPU
             self.optimizer.zero_grad()
 
             # loss
@@ -453,13 +474,24 @@ class CoveragePlannerAgentLocal(BaseAgent):
             # model
             self.model.addGSO(gsoGPU)
             predict = self.model(inputGPU)
-
+            
+            # make sure that non-flattened variables to loss are same shaped
+            assert predict.shape == batch_targetGPU.shape
+            # Get number of actions
+            num_act = predict.shape[-1]
+            # Find loss on flattened features to save time
+            loss_validStep = loss_validStep + self.loss(predict.reshape(-1, num_act),
+                                torch.max(batch_targetGPU.reshape(-1, num_act), 1)[1])
+            
+            '''
+            # old method
             for id_agent in range(self.config.num_agents):
                 # for output, target in zip(predict, target):
                 batch_predict_currentAgent = predict[id_agent][:]
                 batch_target_currentAgent = batch_targetGPU[id_agent][:][:]
                 loss_validStep = loss_validStep + self.loss(batch_predict_currentAgent, torch.max(batch_target_currentAgent, 1)[1])
                 # print(loss)
+            '''
 
             loss_validStep = loss_validStep/self.config.num_agents
 
