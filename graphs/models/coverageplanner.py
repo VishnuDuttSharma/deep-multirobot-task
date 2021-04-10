@@ -18,10 +18,10 @@ class CoveragePlannerNet(nn.Module):
         numFeatures = (self.config.tgt_feat + self.config.rbt_feat)*2
         numAction = 5
         # ------------------ DCP v1.5  -  no CNN- less feature
-        dimCompressMLP = 2
-        numCompressFeatures = [2 ** 4, 2 ** 3]
+        dimCompressMLP = 3
+        numCompressFeatures = [2 ** 5, 2 ** 4, 2 ** 3]
         # # 1 layer origin
-        dimNodeSignals = [2 ** 4]
+        dimNodeSignals = [2 ** 5]
 
         
         nGraphFilterTaps = [self.config.nGraphFilterTaps]
