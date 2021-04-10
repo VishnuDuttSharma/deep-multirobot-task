@@ -18,10 +18,10 @@ class CoveragePlannerNet(nn.Module):
         numFeatures = (self.config.tgt_feat + self.config.rbt_feat)*2
         numAction = 5
         # ------------------ DCP v1.5  -  no CNN- less feature
-        dimCompressMLP = 3
-        numCompressFeatures = [2 ** 5, 2 ** 4, 2 ** 3]
+        dimCompressMLP = 2
+        numCompressFeatures = [2 ** 4, 2 ** 3]
         # # 1 layer origin
-        dimNodeSignals = [2 ** 5]
+        dimNodeSignals = [2 ** 4]
 
         
         nGraphFilterTaps = [self.config.nGraphFilterTaps]
@@ -131,17 +131,20 @@ class CoveragePlannerNet(nn.Module):
     def forward(self, inputTensor):
 
         B = inputTensor.shape[0] # batch size
+        # N = InputTensor.shape[1]
+        (B,N,F) = inputTensor.shape
+        # print(inputTensor.shape)
+        # print(B,N,F)
 
         # B x G x N
-        extractFeatureMap = torch.zeros(B, self.numFeatures2Share, self.numAgents).to(self.config.device)
-        for id_agent in range(self.numAgents):
-            input_currentAgent = inputTensor[:, id_agent]
-            # featureMap = self.ConvLayers(input_currentAgent)
-            # featureMapFlatten = featureMap.view(featureMap.size(0), -1)
-            # extractFeatureMap[:, :, id_agent] = featureMapFlatten
-            # compressfeature = self.compressMLP(featureMapFlatten)
-            compressfeature = self.compressMLP(input_currentAgent)
-            extractFeatureMap[:, :, id_agent] = compressfeature # B x F x N
+        # Reshape to flatten batch and number of robots
+        input_currentAgent = inputTensor.reshape(B*N,F).to(self.config.device)
+        # Feed flattened input to model (B*N,CF)
+        compressfeature = self.compressMLP(input_currentAgent).to(self.config.device)
+        # Reshape back to B,N,CF
+        extractFeatureMap_old = compressfeature.reshape(B,N,self.numFeatures2Share).to(self.config.device)
+        # Reshape to B,CF,N for feeding to GNN
+        extractFeatureMap = extractFeatureMap_old.permute([0,2,1]).to(self.config.device)
 
         # DCP
         for l in range(self.L):
@@ -153,20 +156,16 @@ class CoveragePlannerNet(nn.Module):
 
         # B x F x N - > B x G x N,
         sharedFeature = self.GFL(extractFeatureMap)
-
-        action_predict = []
-        for id_agent in range(self.numAgents):
-            # DCP_nonGCN
-            # sharedFeature_currentAgent = extractFeatureMap[:, :, id_agent]
-            # DCP
-            # torch.index_select(sharedFeature_currentAgent, 3, id_agent)
-            sharedFeature_currentAgent = sharedFeature[:, :, id_agent]
-            # print("sharedFeature_currentAgent.requires_grad: {}\n".format(sharedFeature_currentAgent.requires_grad))
-            # print("sharedFeature_currentAgent.grad_fn: {}\n".format(sharedFeature_currentAgent.grad_fn))
-
-            sharedFeatureFlatten = sharedFeature_currentAgent.view(sharedFeature_currentAgent.size(0), -1)
-            action_currentAgents = self.actionsMLP(sharedFeatureFlatten) # 1 x 5
-            action_predict.append(action_currentAgents) # N x 5
-
-
-        return action_predict
+        
+        # Get number of Graph features
+        (_, num_G, _) = sharedFeature.shape
+        # Permute data to B x N x G
+        sharedFeature_permute = sharedFeature.permute([0,2,1]).to(self.config.device)
+        # Flatten batch and number of robots (B*N,G)
+        sharedFeature_stack = sharedFeature_permute.reshape(B*N,num_G)
+        # Get action values for flattened input
+        action_predict = self.actionsMLP(sharedFeature_stack)
+        # Reshape to B x N x A  (A: action)
+        action_predict_flattened = action_predict.reshape(B,N,action_predict.shape[-1])
+        # Final output shape: B x N X A       
+        return action_predict_flattened
