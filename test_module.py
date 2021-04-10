@@ -131,7 +131,9 @@ def get_accuracy(config, agent, data_loader):
         gsoGPU = batch_GSO.to(config.device)
         # gsoGPU = gsoGPU.unsqueeze(0)
         targetGPU = batch_target.to(config.device)
-        batch_targetGPU = targetGPU.permute(1, 0, 2)
+        # Should not transpose if using flattened batch
+        # batch_targetGPU = targetGPU.permute(1, 0, 2)
+        batch_targetGPU = targetGPU
         agent.optimizer.zero_grad()
 
         # loss
@@ -142,13 +144,14 @@ def get_accuracy(config, agent, data_loader):
         predict = agent.model(inputGPU)
 
         gt_list_long.append(targetGPU.detach().cpu().numpy())
-        pred_list_long.append(np.array([p.detach().cpu().numpy() for p in predict]).transpose(1,0,2))
+        pred_list_long.append(predict.detach().cpu().numpy())
+        # pred_list_long.append(np.array([p.detach().cpu().numpy() for p in predict]).transpose(1,0,2))
 
     np.concatenate(gt_list_long, axis=0).shape, np.concatenate(pred_list_long, axis=0).shape
     gt_idxs = np.concatenate(gt_list_long, axis=0).argmax(axis=2)
     pred_idxs = np.concatenate(pred_list_long, axis=0).argmax(axis=2)
 
-    accuracy = (gt_idxs == pred_idxs).sum()/(len(gt_idxs)*NUM_ROBOT)
+    accuracy = (gt_idxs == pred_idxs).sum()/(len(gt_idxs)*config.num_agents)
     return accuracy
 
 def main(config, agent, num_example=5):
@@ -174,21 +177,24 @@ def main(config, agent, num_example=5):
     gsoGPU = adj_mat_tensor.to(config.device)
     # gsoGPU = gsoGPU.unsqueeze(0)
     targetGPU = targets_tensor.to(config.device)
-    batch_targetGPU = targetGPU.permute(1, 0, 2)
+    # Should not transpose if using flattened batch
+    # batch_targetGPU = targetGPU.permute(1, 0, 2)
+    batch_targetGPU = targetGPU
 
     agent.model.eval();
 
     agent.optimizer.zero_grad()
     agent.model.addGSO(gsoGPU)
     predict = agent.model(inputGPU)
-
-    predict_np = np.array([p.detach().cpu().numpy() for p in predict])
+    
+    predict_np = predict.detach().cpu().numpy()
+    # predict_np = np.array([p.detach().cpu().numpy() for p in predict])
     predict_ind = predict_np.argmax(axis=2)
 
     _, _, gt_act_list, grid_list, robot_pos_list = temp_list 
     gt_act_list = gt_act_list.argmax(axis=2)
 
-    random_acts = np.random.randint(low=0,high=len(DIR_DICT.keys()), size=(len(gt_act_list), NUM_ROBOT))
+    random_acts = np.random.randint(low=0,high=len(DIR_DICT.keys()), size=(len(gt_act_list), config.num_agents))
 
     return grid_list, robot_pos_list, gt_act_list, predict_ind, random_acts
 
@@ -207,7 +213,9 @@ def get_acc_n_loss(config, agent, data_loader):
             gsoGPU = batch_GSO.to(config.device)
             # gsoGPU = gsoGPU.unsqueeze(0)
             targetGPU = batch_target.to(config.device)
-            batch_targetGPU = targetGPU.permute(1, 0, 2)
+            # Should not transpose if flattening the batch
+            # batch_targetGPU = targetGPU.permute(1, 0, 2)
+            batch_targetGPU = targetGPU
             agent.optimizer.zero_grad()
 
             # print('Data shapes: ', inputGPU.shape, gsoGPU.shape) 
@@ -216,24 +224,33 @@ def get_acc_n_loss(config, agent, data_loader):
             predict = agent.model(inputGPU)
             
             gt_list_long.append(targetGPU.detach().cpu().numpy())
-            pred_list_long.append(np.array([p.detach().cpu().numpy() for p in predict]).transpose(1,0,2))
+            pred_list_long.append(predict.detach().cpu().numpy()) 
+            # pred_list_long.append(np.array([p.detach().cpu().numpy() for p in predict]).transpose(1,0,2))
 
             loss_val = 0
+
+            num_act = batch_targetGPU.shape[-1]
+            assert predict.shape == batch_targetGPU.shape
+            loss_val = loss_val + loss_fn(predict.reshape(-1,num_act),  torch.max(batch_targetGPU.reshape(-1,num_act), 1)[1])
             
+            '''
+            # Not needed for flattened inputs
             # print(NUM_ROBOT, len(predict))
             for id_agent in range(NUM_ROBOT):
             # for output, target in zip(predict, target):
                 batch_predict_currentAgent = predict[id_agent][:]
                 batch_target_currentAgent = batch_targetGPU[id_agent][:][:]
                 loss_val = loss_val + loss_fn(batch_predict_currentAgent,  torch.max(batch_target_currentAgent, 1)[1])
-
-    np.concatenate(gt_list_long, axis=0).shape, np.concatenate(pred_list_long, axis=0).shape
+            '''
+    
+    print(f'Num agents: {config.num_agents}')
+    print(np.concatenate(gt_list_long, axis=0).shape, np.concatenate(pred_list_long, axis=0).shape)
     gt_idxs = np.concatenate(gt_list_long, axis=0).argmax(axis=2)
     pred_idxs = np.concatenate(pred_list_long, axis=0).argmax(axis=2)
 
-    accuracy = (gt_idxs == pred_idxs).sum()/(len(gt_idxs)*NUM_ROBOT)
+    accuracy = (gt_idxs == pred_idxs).sum()/(len(gt_idxs)*config.num_agents)
     
-    loss_val = loss_val/NUM_ROBOT
+    loss_val = loss_val/config.num_agents
     log_loss = loss_val.item()
 
     return accuracy, log_loss
@@ -250,7 +267,9 @@ def get_stoc_acc(config, agent, data_loader):
             gsoGPU = batch_GSO.to(config.device)
             # gsoGPU = gsoGPU.unsqueeze(0)
             targetGPU = batch_target.to(config.device)
-            batch_targetGPU = targetGPU.permute(1, 0, 2)
+            # Should not transpose if flattening the batch
+            # batch_targetGPU = targetGPU.permute(1, 0, 2)
+            batch_targetGPU = targetGPU
             agent.optimizer.zero_grad()
 
             
@@ -260,7 +279,9 @@ def get_stoc_acc(config, agent, data_loader):
             
 
             gt_list_long.append(targetGPU.detach().cpu().numpy())
-            pred_list_long.append(np.array([F.softmax(p, dim=1).detach().cpu().numpy() for p in predict]).transpose(1,0,2))
+            pred_list_long.append(F.softmax(predict, dim=2).detach().cpu().numpy() )
+
+            # pred_list_long.append(np.array([F.softmax(p, dim=1).detach().cpu().numpy() for p in predict]).transpose(1,0,2))
 
 
     np.concatenate(gt_list_long, axis=0).shape, np.concatenate(pred_list_long, axis=0).shape
@@ -284,10 +305,14 @@ def get_stoc_acc(config, agent, data_loader):
 
 
 def convert_to_action(pred_list):
+    preds = pred_list
+    '''
+    # not needed for flattened batch
     preds = torch.zeros(pred_list[0].shape[0], len(pred_list), pred_list[0].shape[1])
     for itr in range(len(pred_list)):
         preds[:,itr,:] = pred_list[itr]
-    
+    '''
+
     preds = F.softmax(preds, dim=2)
 
     action_ids = torch.zeros((preds.shape[:2]), dtype=torch.long)
@@ -309,7 +334,9 @@ def get_stoc_acc2(config, agent, data_loader):
             gsoGPU = batch_GSO.to(config.device)
             # gsoGPU = gsoGPU.unsqueeze(0)
             targetGPU = batch_target.to(config.device)
-            batch_targetGPU = targetGPU.permute(1, 0, 2)
+            # Should not transpose if using flattened batch
+            # batch_targetGPU = targetGPU.permute(1, 0, 2)
+            batch_targetGPU = targetGPU
             agent.optimizer.zero_grad()
 
             

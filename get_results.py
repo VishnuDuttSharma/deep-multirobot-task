@@ -62,6 +62,8 @@ random.seed(1337)
 
 args = arg_parser.parse_args()
 config = process_config(args)
+# print('CONFIG:')
+# print(config)
 config['device'] = torch.device('cuda:0')
 config.tgt_feat = 20
 config.rbt_feat = 10
@@ -104,7 +106,7 @@ plt.show()
 
 ### /home/vishnuds/baxterB/multi_robot/gnn_log_data/experiments/dcpOE_map20x20_rho1_10Agent/K4_HS0/1617748311/
 
-filename = f'{config.save_data}/experiments/dcpOE_map20x20_rho1_10Agent/K4_HS0/{timeid}/checkpoints/checkpoint_{config.max_epoch}.pth.tar'
+filename = f'{config.save_data}/experiments/dcpOE_map20x20_rho1_{config.num_agents}Agent/K4_HS0/{timeid}/checkpoints/checkpoint_{config.max_epoch}.pth.tar'
 print(f'loading model from: {filename}')
 checkpoint = torch.load(filename, map_location='cuda:{}'.format(agent.config.gpu_device))
 agent.model.load_state_dict(checkpoint['state_dict'])
