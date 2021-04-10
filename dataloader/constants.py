@@ -1,16 +1,16 @@
 import numpy as np
 
-NUM_ROBOT = 10 #number of robots
+NUM_ROBOT = 50 #number of robots
 REWARD_THRESH = 0.97 # mimimum value of a reward
 PATH_LEN = 2 # Path length/Time horizon
-HEIGHT = 100 # Height of the grid
-WIDTH = 100 # Width of the grid
+HEIGHT = 500 # Height of the grid
+WIDTH = 500 # Width of the grid
 GRID_SIZE = HEIGHT
-STEP = 12# 6
-FOV = 6#3
+STEP = 12 * 4
+FOV = 6 * 4
 NUM_TGT_FEAT = 20
 NUM_ROB_FEAT = 10
-COMM_RANGE = 20.
+COMM_RANGE = 93
 SAMPLE_SIZE = 1000
 
 # Dictionary to save directions

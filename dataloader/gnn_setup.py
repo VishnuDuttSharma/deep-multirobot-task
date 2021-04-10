@@ -1,5 +1,12 @@
+import sys
 import numpy as np
-from dataloader.constants import *
+import argparse
+from tqdm import tqdm
+import pickle
+
+from constants import *
+
+np.random.seed(1232)
 
 def check_symmetric(a, rtol=1e-05, atol=1e-08):
     return np.allclose(a, a.T, rtol=rtol, atol=atol)
@@ -81,17 +88,19 @@ def get_initial_pose(grid, comm_range):
     
     degree_lt_1 = True
     is_symm = False
-    while(degree_lt_1):
-        # Generate random location for each robot
-        initial_pos = np.random.randint(low=0, high=grid.shape[0], size=(num_robot, 2))
-        
-        # get corresponding adjacency matrix
-        adj_mat = get_adjacency_matrix(initial_pos, comm_range)
-        
-        # Check minimum degree. (degree_lt_1 = is any robot connected to 0 robots)
-        degree_lt_1 = ((adj_mat > 0).sum(axis=0) == 0).any()
-        # if not degree_lt_1:
-        #     print('Generating again')
+    # removing constraint
+    # while(degree_lt_1):
+    
+    # Generate random location for each robot
+    initial_pos = np.random.randint(low=0, high=grid.shape[0], size=(num_robot, 2))
+    
+    # get corresponding adjacency matrix
+    adj_mat = get_adjacency_matrix(initial_pos, comm_range)
+    
+    # Check minimum degree. (degree_lt_1 = is any robot connected to 0 robots)
+    # degree_lt_1 = ((adj_mat > 0).sum(axis=0) == 0).any()
+    # if not degree_lt_1:
+    #     print('Generating again')
         
     # Remove the rewards from the grid at robots' locations
     for pos in initial_pos:
@@ -462,3 +471,60 @@ def get_features(grid, robot_pos, fov=FOV, step=STEP, target_feat_size=10, robot
         feat_vec[i_rob, target_feat_size:target_feat_size+min(robot_feat_size, len(indices)), :] = rel_pos[:min(robot_feat_size, len(indices))]
         
     return feat_vec
+
+def generate_data(data_size):
+    feat_list, adj_list, label_list = [], [], []
+    for _ in range(data_size):
+        grid = get_reward_grid(height=HEIGHT, width=WIDTH, reward_thresh=REWARD_THRESH)
+        robot_pos, adj_mat = get_initial_pose(grid, comm_range=COMM_RANGE)
+
+        cent_act, cent_rwd = centralized_greedy_action_finder(grid, robot_pos, fov=FOV)
+        action_vec = cent_act
+        '''
+        rand_act, rand_rwd = random_action_finder(grid, robot_pos, SAMPLE_SIZE)
+
+        if cent_rwd > rand_rwd:
+            action_vec = cent_act
+        else:
+            action_vec = rand_act
+        '''
+
+        feat_vec = get_features(grid, robot_pos, fov=FOV, step=STEP, target_feat_size=NUM_TGT_FEAT, robot_feat_size=NUM_ROB_FEAT)
+        
+        feat_list.append(feat_vec)
+        adj_list.append(adj_mat)
+
+        action_one_hot = np.zeros((NUM_ROBOT, len(DIR_LIST)), dtype=np.uint8)
+        action_one_hot[np.arange(NUM_ROBOT), action_vec] = 1
+        label_list.append(action_one_hot)
+
+    return [np.array(feat_list), np.array(adj_list), np.array(label_list)]
+
+
+if __name__ == '__main__':
+    argparser = argparse.ArgumentParser()
+    argparser.add_argument('--batch_size', type=int, default=500)
+    argparser.add_argument('--save_path', type=str, default=None)
+    
+
+    args = argparser.parse_args()
+
+    print(f'Batch Size: {args.batch_size}')
+    print(f'Data Path: {args.save_path}')
+
+    print('--------------- CONFIG ---------------')
+    print(f'Number of robots: {NUM_ROBOT}')
+    print(f'Height: {HEIGHT}')
+    print(f'Width: {WIDTH}')
+    print(f'Reward thresh: {REWARD_THRESH}')
+    print(f'Comm Range: {COMM_RANGE}')
+    print(f'FoV: {FOV}')
+    print(f'Step size: {STEP}')
+    print(f'#Robot in target: {NUM_TGT_FEAT}')
+    print(f'#Robot in feat: {NUM_ROB_FEAT}')
+    print('--------------------------------------')
+
+    for i in tqdm(range(100)):
+        pickle.dump(generate_data(args.batch_size), open(f'{args.save_path}/data_{i+1}.pkl', 'wb'))
+
+    print('Done!')
