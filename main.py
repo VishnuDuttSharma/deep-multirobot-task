@@ -44,12 +44,15 @@ def main():
     arg_parser.add_argument('--mode', type=str, default='train')
     arg_parser.add_argument('--log_time_trained', type=str, default='0')
 
-    arg_parser.add_argument('--num_agents', type=int, default=8)
+    arg_parser.add_argument('--num_agents', type=int, default=10)
     arg_parser.add_argument('--map_w', type=int, default=20)
     arg_parser.add_argument('--map_density', type=int, default=1)
     arg_parser.add_argument('--map_type', type=str, default='map')
 
-    arg_parser.add_argument('--trained_num_agents', type=int, default=8)
+    arg_parser.add_argument('--tgt_feat', type=int, default=20)
+    arg_parser.add_argument('--rbt_feat', type=int, default=10)
+
+    arg_parser.add_argument('--trained_num_agents', type=int, default=10)
     arg_parser.add_argument('--trained_map_w', type=int, default=20)
     arg_parser.add_argument('--trained_map_density', type=int, default=1)
     arg_parser.add_argument('--trained_map_type', type=str, default='map')
@@ -75,6 +78,9 @@ def main():
 
     # parse the config json file
     config = process_config(args)
+    
+    config.max_epoch = 500
+    config.learning_rate = 0.005
 
     # Create the Agent and pass all the configuration to it then run it..
     agent_class = globals()[config.agent]
