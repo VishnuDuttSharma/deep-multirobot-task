@@ -4,7 +4,7 @@ import argparse
 from tqdm import tqdm
 import pickle
 
-from constants import *
+from dataloader.constants import *
 
 np.random.seed(1232)
 
