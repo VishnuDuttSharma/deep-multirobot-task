@@ -10,8 +10,12 @@ import numpy as np
 from agents import *
 import argparse
 
+import matplotlib
+matplotlib.use('Agg')
+
 from test_module import *
 from matplotlib import pyplot as plt
+
 from tensorboard.backend.event_processing.event_accumulator import EventAccumulator
 
 
@@ -64,12 +68,14 @@ args = arg_parser.parse_args()
 config = process_config(args)
 # print('CONFIG:')
 # print(config)
+
 config['device'] = torch.device('cuda:0')
 config.tgt_feat = 20
 config.rbt_feat = 10
 config.max_epoch = 500
 config.learning_rate = 0.005
-config.nGraphFilterTaps = 4
+config.nGraphFilterTaps = 3
+
 
 timeid = args.timeid
 
@@ -79,34 +85,48 @@ timeid = args.timeid
 agent_class = globals()[config.agent]
 agent = agent_class(config)
 
-'''
+
 print('Plotting graphs')
 
-event_acc = EventAccumulator(f'/home/vishnuds/baxterB/multi_robot/gnn_tb_data/dcpOE_map20x20_rho1_8Agent/K4_HS0/{timeid}/')
+event_acc = EventAccumulator(f'/home/vishnuds/baxterB/multi_robot/gnn_tb_data/dcpOE_map20x20_rho1_{config.num_agents}Agent/K{config.nGraphFilterTaps}_HS0/{timeid}/')
 event_acc.Reload()
-train_batch_size = 64#config.batch_size
-train_data_size = 60000
-steps = np.array(event_acc.Scalars('iteration/loss'))[:,1].astype(int)*train_batch_size
+
+
+train_batch_size = config.batch_size
+if config.num_agents == 50:
+    train_data_size = 29500 #60000
+else:
+    train_data_size = 59000
+    
+steps = np.array(event_acc.Scalars('iteration/loss'))[:,1].astype(int)*train_batch_size // train_data_size
 train_loss = np.array(event_acc.Scalars('iteration/loss'))[:,2]
 
-train_loss_avg = []
-for i in range(config.max_epoch):
-    # train_loss_avg.append( np.sum(train_batch_size * train_loss[(steps >= i*60000) & (steps < (i+1)*60000) ])/60000)
-    train_loss_avg.append( np.mean(train_loss[(steps >= i*train_data_size) & (steps < (i+1)*train_data_size) ]))
+train_steps = []
+train_loss_4_plot = []
+for idx in np.unique(steps):
+    train_steps.append(idx)
+    train_loss_4_plot.append( np.mean(train_loss[steps == idx]) )  
+
+
 
 valid_step = np.array(event_acc.Scalars('epoch/loss_validStep'))[:,1].astype(int)
 valid_loss = np.array(event_acc.Scalars('epoch/loss_validStep'))[:,2]
 
 
-plt.plot(np.arange(1,config.max_epoch+1), train_loss_avg, 'b')
-plt.show()
-plt.plot(valid_step, valid_loss, 'r')
-plt.show()
-'''
+# fig, ax = plt.subplots( nrows=1, ncols=1 ) 
+plt.plot(train_steps, train_loss_4_plot, 'r', label='Training loss')
+plt.plot(valid_step, valid_loss, 'b', label='Validation loss')
+plt.xlabel('Epochs')
+plt.ylabel('Cross-Ent Loss')
+plt.legend()
+#plt.show()
+plt.savefig('results.png', bbox_inches='tight')
+print('Done plotting')
 
 ### /home/vishnuds/baxterB/multi_robot/gnn_log_data/experiments/dcpOE_map20x20_rho1_10Agent/K4_HS0/1617748311/
 
-filename = f'{config.save_data}/experiments/dcpOE_map20x20_rho1_{config.num_agents}Agent/K4_HS0/{timeid}/checkpoints/checkpoint_{config.max_epoch}.pth.tar'
+filename = f'{config.save_data}/experiments/dcpOE_map20x20_rho1_{config.num_agents}Agent/K{config.nGraphFilterTaps}_HS0/{timeid}/checkpoints/checkpoint_{config.max_epoch}.pth.tar'
+# filename = '/home/vishnuds/baxterB/multi_robot/gnn_log_data/dummy_model/checkpoint_500.pth.tar'
 print(f'loading model from: {filename}')
 checkpoint = torch.load(filename, map_location='cuda:{}'.format(agent.config.gpu_device))
 agent.model.load_state_dict(checkpoint['state_dict'])
