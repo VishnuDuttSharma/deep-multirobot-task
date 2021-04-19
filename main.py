@@ -79,14 +79,14 @@ def main():
     # parse the config json file
     config = process_config(args)
     
-    config.max_epoch = 500
+    config.max_epoch = 1000
     config.learning_rate = 0.005
 
     # Create the Agent and pass all the configuration to it then run it..
     agent_class = globals()[config.agent]
     agent = agent_class(config)
     agent.run()
-    agent.finalize()
+    # agent.finalize()
 
 
 if __name__ == '__main__':
