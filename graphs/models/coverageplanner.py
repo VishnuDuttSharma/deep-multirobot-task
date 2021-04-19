@@ -18,13 +18,14 @@ class CoveragePlannerNet(nn.Module):
         numFeatures = (self.config.tgt_feat + self.config.rbt_feat)*2
         numAction = 5
         # ------------------ DCP v1.5  -  no CNN- less feature
-        dimCompressMLP = 2
-        numCompressFeatures = [2 ** 4, 2 ** 3]
+        dimCompressMLP = 3
+        numCompressFeatures = [2 ** 5,  2 ** 4, 2 ** 3]
         # # 1 layer origin
-        dimNodeSignals = [2 ** 4]
+        dimNodeSignals = [2 ** 5, 2 ** 3] #[2 ** 5, 2 ** 7]
 
         
-        nGraphFilterTaps = [self.config.nGraphFilterTaps]
+        # nGraphFilterTaps = [self.config.nGraphFilterTaps]
+        nGraphFilterTaps = [self.config.nGraphFilterTaps, self.config.nGraphFilterTaps]
         # --- actionMLP
         dimActionMLP = 1
         numActionFeatures = [numAction]
@@ -72,6 +73,9 @@ class CoveragePlannerNet(nn.Module):
 
             # \\ Nonlinearity
             gfl.append(nn.ReLU(inplace=True))
+
+            # gfl.append(gml.GraphFilterBatch(self.F[l+1], self.F[l + 2], self.K[l], self.E, self.bias))
+            # gfl.append(nn.ReLU(inplace=True))
 
         # And now feed them into the sequential
         self.GFL = nn.Sequential(*gfl)  # Graph Filtering Layers
