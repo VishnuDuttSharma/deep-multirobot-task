@@ -250,7 +250,7 @@ def get_acc_n_loss(config, agent, data_loader):
 
     accuracy = (gt_idxs == pred_idxs).sum()/(len(gt_idxs)*config.num_agents)
     
-    loss_val = loss_val/config.num_agents
+    loss_val = loss_val #/config.num_agents
     log_loss = loss_val.item()
 
     return accuracy, log_loss

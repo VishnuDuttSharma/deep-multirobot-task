@@ -322,7 +322,7 @@ class CoveragePlannerAgentLocal(BaseAgent):
                 # print(loss)
             '''
 
-            loss = loss/self.config.num_agents
+            # loss = loss/self.config.num_agents
 
             loss.backward()
             # for param in self.model.parameters():
@@ -399,7 +399,7 @@ class CoveragePlannerAgentLocal(BaseAgent):
                     
                     num_act = step_targetGPU.shape[-1]
                     loss = self.loss(batch_predict_currentAgent.reshape(-1, num_act),
-                                        torch.max(batch_target_currentAgent.reshape(-1, num_act), 1)[1]) / self.config.num_agents
+                                        torch.max(batch_target_currentAgent.reshape(-1, num_act), 1)[1]) # / self.config.num_agents
                     
                     '''
                     # old loss function 
@@ -493,7 +493,7 @@ class CoveragePlannerAgentLocal(BaseAgent):
                 # print(loss)
             '''
 
-            loss_validStep = loss_validStep/self.config.num_agents
+            # loss_validStep = loss_validStep/self.config.num_agents
 
             if batch_idx % self.config.log_interval == 0:
                 self.logger.info('ValidStep {} on Epoch {}: [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(self.config.exp_name,
