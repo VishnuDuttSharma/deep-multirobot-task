@@ -72,9 +72,9 @@ config = process_config(args)
 config['device'] = torch.device('cuda:0')
 config.tgt_feat = 20
 config.rbt_feat = 10
-config.max_epoch = 500
+config.max_epoch = 1000
 config.learning_rate = 0.005
-config.nGraphFilterTaps = 3
+config.nGraphFilterTaps = 5
 
 
 timeid = args.timeid
@@ -95,6 +95,8 @@ event_acc.Reload()
 train_batch_size = config.batch_size
 if config.num_agents == 50:
     train_data_size = 29500 #60000
+elif config.num_agents == 20:
+    train_data_size = 120000 
 else:
     train_data_size = 59000
     
