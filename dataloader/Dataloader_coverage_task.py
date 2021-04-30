@@ -20,7 +20,7 @@ class GNNCoverageDataLoader:
         self.logger.info(log_info)
     
         if config.mode == "train":
-            trainlist = [self.config.data_root+f'data_{i+1}.pkl' for i in range(1, 60)]
+            trainlist = [self.config.data_root+f'data_{i+1}.pkl' for i in range(0, 60)]
             train_set = GNNCoverageDataset(self.config, trainlist)
             validlist = [self.config.data_root+f'data_{i+1}.pkl' for i in range(60, 80)]
             valid_set = GNNCoverageDataset(self.config, validlist)
@@ -33,7 +33,7 @@ class GNNCoverageDataLoader:
                                            num_workers=self.config.data_loader_workers,
                                            pin_memory=self.config.pin_memory)
         elif config.mode == "test":
-            trainlist = [self.config.data_root+f'data_{i+1}.pkl' for i in range(1, 60)]
+            trainlist = [self.config.data_root+f'data_{i+1}.pkl' for i in range(0, 60)]
             train_set = GNNCoverageDataset(self.config, trainlist)
             self.train_loader = DataLoader(train_set, batch_size=self.config.batch_size, shuffle=False,
                                            num_workers=self.config.data_loader_workers,
