@@ -21,7 +21,7 @@ class CoveragePlannerNet(nn.Module):
         dimCompressMLP = 3
         numCompressFeatures = [2 ** 5,  2 ** 4, 2 ** 3]
         # # 1 layer origin
-        dimNodeSignals = [2 ** 5, 2 ** 3] #[2 ** 5, 2 ** 7]
+        dimNodeSignals = [2 ** 5, 2 ** 7] #[2 ** 5, 2 ** 3] #[2 ** 5, 2 ** 7]
 
         
         # nGraphFilterTaps = [self.config.nGraphFilterTaps]
