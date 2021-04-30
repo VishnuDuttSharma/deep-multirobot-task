@@ -14,3 +14,21 @@
 3 layer (32, 16, 8) 50 robot, lr: 0.005, 2-GNN (32, 128), 2 filtertaps: 1618458774
 3 layer (32, 16, 8) 50 robot, lr: 0.005, 2-GNN (32, 128), 3 filtertaps, 1000 epoch: 1618462849
 3 layer (32, 16, 8) 50 robot, lr: 0.005, 2-GNN (32, 8), 3 filtertaps: 1618518840
+2 layer (16, 8) 20 robot: 1618892781
+2 layer (32, 8) 20 robot: 1618920143
+2 layer (32, 8) 20 robot 1000 epoch: 1618931261
+3 layer (32, 16, 8) 20 robot: 1618954857
+3 layer (32, 16, 8) 20 robot 3 filtertaps: 1618967315
+3 layer (32, 16, 8) 20 robot 5 filtertaps: 1618978823
+3 layer (32, 16, 8) 20 robot 3 filtertaps, 2-GNN (32, 128): 1619014510
+3 layer (32, 16, 8) 20 robot 3 filtertaps, 2-GNN (32, 16): 1619028505
+3 layer (32, 16, 8) 20 robot 2 filtertaps, 2-GNN (32, 16): 1619042655
+3 layer (32, 16, 8) 20 robot 2 filtertaps, 2-GNN (32, 128): 1619053654
+3 layer (32, 16, 8) 20 robot 4 filtertaps, 2-GNN (32, 128): 1619062503 
+3 layer (32, 16, 8) 20 robot 5 filtertaps, 2-GNN (32, 128): 1619098835
+3 layer (32, 16, 8) 20 robot 5 filtertaps, 2-GNN (32, 128), BS 128: 1619130143
+3 layer (32, 16, 8) 20 robot 5 filtertaps, 2-GNN (32, 128), BS 256: 1619151267
+3 layer (32, 16, 8) 20 robot 5 filtertaps, 2-GNN (32, 128), BS 512: 1619186987
+3 layer (32, 16, 8) 20 robot 5 filtertaps, 2-GNN (32, 128), BS 256, lr 0.001: 1619189751
+3 layer (32, 16, 8) 20 robot 5 filtertaps, 2-GNN (32, 128), BS 256: 1619193493
+ 
