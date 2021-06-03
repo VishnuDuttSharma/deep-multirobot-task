@@ -24,8 +24,9 @@ class CoveragePlannerNet(nn.Module):
         dimNodeSignals = [2 ** 5, 2 ** 7] #[2 ** 5, 2 ** 3] #[2 ** 5, 2 ** 7]
 
         
-        # nGraphFilterTaps = [self.config.nGraphFilterTaps]
-        nGraphFilterTaps = [self.config.nGraphFilterTaps, self.config.nGraphFilterTaps]
+        nGraphFilterTaps = [self.config.nGraphFilterTaps] * len(dimNodeSignals)
+        # nGraphFilterTaps = [self.config.nGraphFilterTaps, self.config.nGraphFilterTaps]
+        # nGraphFilterTaps = [self.config.nGraphFilterTaps, self.config.nGraphFilterTaps, self.config.nGraphFilterTaps]
         # --- actionMLP
         dimActionMLP = 1
         numActionFeatures = [numAction]

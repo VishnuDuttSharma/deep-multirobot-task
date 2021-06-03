@@ -79,7 +79,7 @@ def main():
     # parse the config json file
     config = process_config(args)
     
-    config.max_epoch = 1000
+    config.max_epoch = 5000
     config.learning_rate = 0.005
 
     # Create the Agent and pass all the configuration to it then run it..
