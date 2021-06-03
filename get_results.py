@@ -72,9 +72,9 @@ config = process_config(args)
 config['device'] = torch.device('cuda:0')
 config.tgt_feat = 20
 config.rbt_feat = 10
-config.max_epoch = 1000
+config.max_epoch = 5000 #3000
 config.learning_rate = 0.005
-config.nGraphFilterTaps = 5
+config.nGraphFilterTaps = 2
 
 
 timeid = args.timeid
@@ -96,9 +96,9 @@ train_batch_size = config.batch_size
 if config.num_agents == 50:
     train_data_size = 29500 #60000
 elif config.num_agents == 20:
-    train_data_size = 120000 
+    train_data_size = 300000# 120000 
 else:
-    train_data_size = 59000
+    train_data_size = 240000 #59000
     
 steps = np.array(event_acc.Scalars('iteration/loss'))[:,1].astype(int)*train_batch_size // train_data_size
 train_loss = np.array(event_acc.Scalars('iteration/loss'))[:,2]
@@ -147,6 +147,7 @@ print(f'Test Accuracy: {100*acc}%')
 print(f'Test Loss: {lss}')
 #######################################################
 
+'''
 #######################################################
 acc = get_stoc_acc(config, agent, agent.data_loader.train_loader)
 print(f'Train Accuracy(stoc): {100*acc}%')
@@ -168,3 +169,4 @@ print(f'Valid Accuracy(stoc): {100*acc}%')
 acc = get_stoc_acc2(config, agent, agent.data_loader.test_loader)
 print(f'Test Accuracy(stoc): {100*acc}%')
 ########################################################
+'''
