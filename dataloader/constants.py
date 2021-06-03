@@ -1,12 +1,12 @@
 import numpy as np
 
-NUM_ROBOT = 20 #number of robots
-REWARD_THRESH = 0.975 # mimimum value of a reward
+NUM_ROBOT = 10 #number of robots
+REWARD_THRESH = 0.975 #0.90 #0.975 # mimimum value of a reward
 PATH_LEN = 2 # Path length/Time horizon
-HEIGHT = 100 # Height of the grid
-WIDTH = 100 # Width of the grid
+HEIGHT = int(np.sqrt(NUM_ROBOT*(100*100/20))) # int(100*NUM_ROBOT/20) # Height of the grid
+WIDTH = int(np.sqrt(NUM_ROBOT*(100*100/20))) # int(100*NUM_ROBOT/20) # Width of the grid
 GRID_SIZE = HEIGHT
-STEP = 8 # 6
+STEP = 20 #8 #20 #8 # 6
 FOV = 6 #3
 NUM_TGT_FEAT = 20
 NUM_ROB_FEAT = 10
