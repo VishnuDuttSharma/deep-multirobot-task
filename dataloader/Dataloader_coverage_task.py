@@ -93,10 +93,10 @@ def generate_data(data_size):
     feat_list, adj_list, label_list = [], [], []
     for _ in range(data_size):
         grid = get_reward_grid(height=HEIGHT, width=WIDTH, reward_thresh=REWARD_THRESH)
-        robot_pos, adj_mat = get_initial_pose(grid, comm_range=20)
+        robot_pos, adj_mat = get_initial_pose(grid, comm_range=COMM_RANGE)
 
         cent_act, cent_rwd = centralized_greedy_action_finder(grid, robot_pos, fov=FOV)
-        rand_act, rand_rwd = random_action_finder(grid, robot_pos, 1000)
+        # rand_act, rand_rwd = random_action_finder(grid, robot_pos, 1000)
 
         if cent_rwd > rand_rwd:
             action_vec = cent_act
