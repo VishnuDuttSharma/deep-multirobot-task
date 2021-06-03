@@ -5,6 +5,7 @@ from tqdm import tqdm
 import pickle
 
 from dataloader.constants import *
+# from constants import *
 
 np.random.seed(1232)
 
@@ -88,15 +89,19 @@ def get_initial_pose(grid, comm_range):
     
     degree_lt_1 = True
     is_symm = False
+    adj_is_nan = True
     # removing constraint
     # while(degree_lt_1):
     
-    # Generate random location for each robot
-    initial_pos = np.random.randint(low=0, high=grid.shape[0], size=(num_robot, 2))
+    while adj_is_nan:
+        # Generate random location for each robot
+        initial_pos = np.random.randint(low=0, high=grid.shape[0], size=(num_robot, 2))
     
-    # get corresponding adjacency matrix
-    adj_mat = get_adjacency_matrix(initial_pos, comm_range)
-    
+        # get corresponding adjacency matrix
+        adj_mat = get_adjacency_matrix(initial_pos, comm_range)
+        
+        adj_is_nan = np.isnan(adj_mat).any()
+
     # Check minimum degree. (degree_lt_1 = is any robot connected to 0 robots)
     # degree_lt_1 = ((adj_mat > 0).sum(axis=0) == 0).any()
     # if not degree_lt_1:
@@ -147,12 +152,13 @@ def calculate_reward(grid, robot_pos, action_list, fov=FOV, get_mask=False):
     -------
         total_reward: Total reward calculated by the robots using action_list (the action vector)
     """
+    grid_size = grid.shape[0]
     # Convert the integer actions to 2D vector of location differences using DIR_DICT dictionary
     act = np.array([DIR_DICT[k] for k in action_list])
     # Calcuate new locations for each robot
     new_pos = robot_pos + act
     # Make sure that the new locatiosn are within the grid 
-    new_pos = new_pos.clip(min=0, max=GRID_SIZE-1)
+    new_pos = new_pos.clip(min=0, max=grid_size-1)
     
     # Initialize a mask of same shape as grid
     mask = np.zeros(grid.shape, dtype=int)
@@ -166,8 +172,8 @@ def calculate_reward(grid, robot_pos, action_list, fov=FOV, get_mask=False):
         # This box has a padding of size FOV on each size
         r_lim_lef = max(0, min(c_pos[0]-fov, n_pos[0]-fov))
         c_lim_top = max(0, min(c_pos[1]-fov, n_pos[1]-fov))
-        r_lim_rgt = min(max(c_pos[0]+fov+1, n_pos[0]+fov+1), GRID_SIZE)
-        c_lim_bot = min(max(c_pos[1]+fov+1, n_pos[1]+fov+1), GRID_SIZE)
+        r_lim_rgt = min(max(c_pos[0]+fov+1, n_pos[0]+fov+1), grid_size)
+        c_lim_bot = min(max(c_pos[1]+fov+1, n_pos[1]+fov+1), grid_size)
         
         # Set the locations withing mask (i.e. witing robot's vision when it moved) to 1
         mask[r_lim_lef:r_lim_rgt, c_lim_top:c_lim_bot] = 1
@@ -198,6 +204,7 @@ def greedy_action_finder(grid, robot_pos, fov):
         robot_acts: List of actions for each robot
         reward: Reward over the greedy 
     '''
+    grid_size = grid.shape[0]
     # Copy teh original grid for later use
     orig_grid = grid.copy()
     # List of actions
@@ -219,11 +226,11 @@ def greedy_action_finder(grid, robot_pos, fov):
             # Move robot to new location according to the action
             r_pos = robot_pos[i_rob] + DIR_DICT[i_act]
             # Keep the robot within the grid by limiting x-y coordinated in range [9,grid size)
-            r_pos = r_pos.clip(min=0, max=GRID_SIZE-1)
+            r_pos = r_pos.clip(min=0, max=grid_size-1)
 
             # Find reward. It is the number of total targets in robot's FOV
-            reward = np.sum(test_grid[max(0,r_pos[0]-FOV):min(r_pos[0]+FOV+1,GRID_SIZE),
-                                max(0,r_pos[1]-FOV):min(r_pos[1]+FOV+1,GRID_SIZE)])
+            reward = np.sum(test_grid[max(0,r_pos[0]-fov):min(r_pos[0]+FOV+1,grid_size),
+                                max(0,r_pos[1]-fov):min(r_pos[1]+FOV+1,grid_size)])
             # Add the reward to teh list
             reward_list.append(reward)
         
@@ -238,8 +245,8 @@ def greedy_action_finder(grid, robot_pos, fov):
         new_pos[i_rob] = r_pos
 
         # Remove the targets within Robot's field of view
-        test_grid[max(0,r_pos[0]-FOV):min(r_pos[0]+FOV+1,GRID_SIZE),
-                    max(0,r_pos[1]-FOV):min(r_pos[1]+FOV+1,GRID_SIZE)] = 0
+        test_grid[max(0,r_pos[0]-FOV):min(r_pos[0]+fov+1,grid_size),
+                    max(0,r_pos[1]-FOV):min(r_pos[1]+fov+1,grid_size)] = 0
         
         # Update the grid
         grid = test_grid.copy()
@@ -265,8 +272,9 @@ def random_action_finder(grid, robot_pos, sample_size):
         Best performing action vector
         Corresponding reward
     '''
+    num_robot = robot_pos.shape[0]
     # Generate random actions
-    action_space = np.random.randint(low=0,high=len(DIR_DICT.keys()), size=(sample_size, NUM_ROBOT))
+    action_space = np.random.randint(low=0,high=len(DIR_DICT.keys()), size=(sample_size, num_robot))
     # List to save rewards for all actions
     reward_list = []
 
@@ -300,6 +308,7 @@ def centralized_greedy_action_finder(grid, robot_pos, fov):
         robot_acts: List of actions for each robot
         reward: Reward over the greedy 
     '''
+    grid_size = grid.shape[0]
     # Get the number of robots
     n_rob = robot_pos.shape[0] #NUM_ROBOT
     # Copy the original grid for later use
@@ -326,14 +335,14 @@ def centralized_greedy_action_finder(grid, robot_pos, fov):
             c_pos = robot_pos[last_robot_id] # current pos
             n_pos = c_pos + DIR_DICT[ robot_acts[last_robot_id] ]
             # Keep the robot within the grid by limiting x-y coordinated in range [0,grid size)
-            n_pos = n_pos.clip(min=0, max=GRID_SIZE-1)
+            n_pos = n_pos.clip(min=0, max=grid_size-1)
 
             # Calculate the bounding box ranges for the box generated by robot moving from the current location (c_pos) to new location (n_pos)
             # This box has a padding of size FOV on each size
-            r_lim_lef = max(0, min(c_pos[0]-FOV, n_pos[0]-FOV))
-            c_lim_top = max(0, min(c_pos[1]-FOV, n_pos[1]-FOV))
-            r_lim_rgt = min(max(c_pos[0]+FOV+1, n_pos[0]+FOV+1), GRID_SIZE)
-            c_lim_bot = min(max(c_pos[1]+FOV+1, n_pos[1]+FOV+1), GRID_SIZE)
+            r_lim_lef = max(0, min(c_pos[0]-fov, n_pos[0]-fov))
+            c_lim_top = max(0, min(c_pos[1]-fov, n_pos[1]-fov))
+            r_lim_rgt = min(max(c_pos[0]+fov+1, n_pos[0]+fov+1), grid_size)
+            c_lim_bot = min(max(c_pos[1]+fov+1, n_pos[1]+fov+1), grid_size)
 
             # Set the locations withing mask (i.e. witing robot's vision when it moved) to 1
             mask[r_lim_lef:r_lim_rgt, c_lim_top:c_lim_bot] = 1
@@ -357,14 +366,14 @@ def centralized_greedy_action_finder(grid, robot_pos, fov):
                 # Move robot to new location according to the action
                 n_pos = c_pos + DIR_DICT[i_act]
                 # Keep the robot within the grid by limiting x-y coordinated in range [0,grid size)
-                n_pos = n_pos.clip(min=0, max=GRID_SIZE-1)
+                n_pos = n_pos.clip(min=0, max=grid_size-1)
 
                 # Calculate the bounding box ranges for the box generated by robot moving from the current location (c_pos) to new location (n_pos)
                 # This box has a padding of size FOV on each size
-                r_lim_lef = max(0, min(c_pos[0]-FOV, n_pos[0]-FOV))
-                c_lim_top = max(0, min(c_pos[1]-FOV, n_pos[1]-FOV))
-                r_lim_rgt = min(max(c_pos[0]+FOV+1, n_pos[0]+FOV+1), GRID_SIZE)
-                c_lim_bot = min(max(c_pos[1]+FOV+1, n_pos[1]+FOV+1), GRID_SIZE)
+                r_lim_lef = max(0, min(c_pos[0]-fov, n_pos[0]-fov))
+                c_lim_top = max(0, min(c_pos[1]-fov, n_pos[1]-fov))
+                r_lim_rgt = min(max(c_pos[0]+fov+1, n_pos[0]+fov+1), grid_size)
+                c_lim_bot = min(max(c_pos[1]+fov+1, n_pos[1]+fov+1), grid_size)
 
                 # Set the locations withing mask (i.e. witing robot's vision when it moved) to 1
                 temp_mask[r_lim_lef:r_lim_rgt, c_lim_top:c_lim_bot] = 1
@@ -427,22 +436,23 @@ def get_features(grid, robot_pos, fov=FOV, step=STEP, target_feat_size=10, robot
     -------
         feat_vec: Feature vector containing location of targets and robots in local FoV of each robot. Size: num_robot x (target_feat_size + robot_feat_size)
     '''
+    grid_size = grid.shape[0]
     # Get number of robots
-    num_rob = NUM_ROBOT
+    num_rob = robot_pos.shape[0]
     # Create an empty vector for features. size: N_Robot x (targets + robot) x 2
     feat_vec = -1*np.ones((num_rob, target_feat_size + robot_feat_size, 2))
 
     # Iterate over each robot
     for i_rob in range(num_rob):
         # copy current pos
-        c_pos = robot_pos.shape[0] #robot_pos[i_rob]
+        c_pos = robot_pos[i_rob]
         
         # Calculate the bounding box ranges for the box generated by robot moving from the current location (c_pos) to new location (n_pos)
         # This box has a padding of size FOV on each size. We add step to consider effect of motion in all directions
         r_lim_lef = max(0, c_pos[0]-fov-step)
         c_lim_top = max(0, c_pos[1]-fov-step)
-        r_lim_rgt = min(c_pos[0]+fov+step+1, GRID_SIZE)
-        c_lim_bot = min(c_pos[1]+fov+step+1, GRID_SIZE)
+        r_lim_rgt = min(c_pos[0]+fov+step+1, grid_size)
+        c_lim_bot = min(c_pos[1]+fov+step+1, grid_size)
 
         # create the mask with 1s in robot's FOV
         mask = np.zeros(grid.shape)
@@ -473,7 +483,7 @@ def get_features(grid, robot_pos, fov=FOV, step=STEP, target_feat_size=10, robot
         
         # Save into the feature vector
         feat_vec[i_rob, target_feat_size:target_feat_size+min(robot_feat_size, len(indices)), :] = rel_pos[:min(robot_feat_size, len(indices))]
-        
+        # 20 + 10, 2, 60
     return feat_vec
 
 def generate_data(data_size):
