@@ -247,7 +247,8 @@ class CoveragePlannerAgentLocal(BaseAgent):
 
             rateReachGoal = 0.0
             if self.config.num_agents >= 10:
-                if epoch % self.config.validate_every == 0:
+                #if epoch % self.config.validate_every == 0:
+                if epoch % 500 == 0:
                     # rateReachGoal = self.test(self.config.mode)
                     # self.test('test_trainingSet')
                     self.test_step()
