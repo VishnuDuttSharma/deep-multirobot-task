@@ -4,3 +4,4 @@
 nohup.out
 **/*.log
 *.csv
+**/configs_stash
