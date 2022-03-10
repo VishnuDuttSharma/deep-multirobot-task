@@ -3,3 +3,4 @@
 **/.ipynb_checkpoints
 nohup.out
 **/*.log
+*.csv
