@@ -70,7 +70,19 @@ class GNNCoverageDataset(data.Dataset):
         featlist, adjlist, tgtlist = [], [], []
         for fl in datafilelist:
             feat, adj, tgt = pickle.load(open(fl, 'rb'))
-            feat_reshaped = feat[:,:,:numFeature,:].reshape(feat.shape[0], feat.shape[1], numFeature*2)
+            
+            # For rect_longstep data
+            # NUM_TGT_FEAT = 40
+            # NUM_ROB_FEAT = 10
+            ''' 
+            NFT, NFR = 40, 10
+
+            feat_slice = np.concatenate([feat[:,:,:config.tgt_feat,:], feat[:,:,NFT:NFT+config.rbt_feat,:]],axis=2)
+
+            feat_reshaped = feat_slice.reshape(feat.shape[0], feat.shape[1], numFeature*2)
+            '''
+            feat_reshaped = feat[:,:,:numFeature,:].reshape((feat.shape[0], feat.shape[1], numFeature*2), order='F') #### Added order = F to correct reshaping
+            # '''
             featlist.append(feat_reshaped)
             adjlist.append(adj)
             tgtlist.append(tgt)
