@@ -8,6 +8,8 @@ from dataloader.gnn_setup import *
 
 from graphs.losses.cross_entropy import CrossEntropyLoss
 
+print('Parameters used')
+
 def generate_data(data_size):
     feat_list, adj_list, label_list = [], [], []
     grid_list  = []
@@ -207,6 +209,8 @@ def get_acc_n_loss(config, agent, data_loader):
     loss_fn = CrossEntropyLoss()
     loss_fn = loss_fn.to(config.device)
     
+    agent.model.eval()
+
     with torch.no_grad():
         for batch_idx, (batch_input, batch_GSO, batch_target) in enumerate(data_loader):
             inputGPU = batch_input.to(config.device)

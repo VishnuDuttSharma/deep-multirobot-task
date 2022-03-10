@@ -28,6 +28,16 @@ class CoveragePlannerNet(nn.Module):
         # nGraphFilterTaps = [self.config.nGraphFilterTaps, self.config.nGraphFilterTaps]
         # nGraphFilterTaps = [self.config.nGraphFilterTaps, self.config.nGraphFilterTaps, self.config.nGraphFilterTaps]
         # --- actionMLP
+        '''
+        ## UNCOMMENT THIS
+
+        if self.config.use_dropout:
+            dimActionMLP = 2
+            numActionFeatures = [self.config.numInputFeatures, numAction]
+        else:
+            dimActionMLP = 1
+            numActionFeatures = [numAction]
+        '''
         dimActionMLP = 1
         numActionFeatures = [numAction]
 
@@ -46,6 +56,13 @@ class CoveragePlannerNet(nn.Module):
             compressmlp.append(
                 nn.Linear(in_features=numCompressFeatures[l], out_features=numCompressFeatures[l + 1], bias=True))
             compressmlp.append(nn.ReLU(inplace=True))
+            '''
+            Extra: Sep 1, 2021
+            '''
+            # compressmlp.append(nn.Dropout(p=0.3))
+            '''
+            end
+            '''
 
         self.compressMLP = nn.Sequential(*compressmlp)
 
@@ -75,6 +92,30 @@ class CoveragePlannerNet(nn.Module):
             # \\ Nonlinearity
             gfl.append(nn.ReLU(inplace=True))
 
+            '''
+            # \\ Graph filtering stage:
+            if self.config.attentionMode == 'GAT_origin':
+                gfl.append(gml.GraphFilterBatchAttentional_Origin(self.F[l], self.F[l + 1], self.K[l], self.P[l], self.E,self.bias,
+                                                           concatenate=self.config.AttentionConcat,attentionMode=self.config.attentionMode))
+
+            elif self.config.attentionMode == 'GAT_modified' or self.config.attentionMode == 'KeyQuery':
+                gfl.append(gml.GraphFilterBatchAttentional(self.F[l], self.F[l + 1], self.K[l], self.P[l], self.E, self.bias,concatenate=self.config.AttentionConcat,
+                                                    attentionMode=self.config.attentionMode))
+            elif self.config.attentionMode == 'GAT_Similarity':
+                gfl.append(gml.GraphFilterBatchSimilarityAttentional(self.F[l], self.F[l + 1], self.K[l], self.P[l], self.E, self.bias,concatenate=self.config.AttentionConcat,
+                                                    attentionMode=self.config.attentionMode))
+            '''
+
+            
+            
+            
+            # There is a 2*l below here, because we have three elements per
+            # layer: graph filter, nonlinearity and pooling, so after each layer
+            # we're actually adding elements to the (sequential) list.
+
+            # \\ Nonlinearity
+            # gfl.append(nn.ReLU(inplace=True))
+
             # gfl.append(gml.GraphFilterBatch(self.F[l+1], self.F[l + 2], self.K[l], self.E, self.bias))
             # gfl.append(nn.ReLU(inplace=True))
 
@@ -86,8 +127,16 @@ class CoveragePlannerNet(nn.Module):
         #                    MLP --- map to actions                         #
         #                                                                   #
         #####################################################################
+        '''
+        ## UNCOMMENT THIS
 
+        if self.config.AttentionConcat:
+            numActionFeatures = [self.F[-1]*self.config.nAttentionHeads] + numActionFeatures
+        else:
+            numActionFeatures = [self.F[-1]] + numActionFeatures
+        '''
         numActionFeatures = [self.F[-1]] + numActionFeatures
+
         actionsfc = []
         for l in range(dimActionMLP):
             if l < (dimActionMLP - 1):
@@ -97,6 +146,14 @@ class CoveragePlannerNet(nn.Module):
             else:
                 actionsfc.append(
                     nn.Linear(in_features=numActionFeatures[l], out_features=numActionFeatures[l + 1], bias=True))
+            
+            '''
+            ## UNCOMMENT THIS
+
+            if config.use_dropout:
+                actionsfc.append(nn.Dropout(p=0.2))
+                print('Dropout is add on MLP')
+            '''
 
         self.actionsMLP = nn.Sequential(*actionsfc)
         self.apply(weights_init)

@@ -18,7 +18,11 @@ from matplotlib import pyplot as plt
 
 from tensorboard.backend.event_processing.event_accumulator import EventAccumulator
 
-
+print('Parameters used:')
+print(f'FoV: {FOV}')
+print(f'Step: {STEP}')
+print(f'CommR: {COMM_RANGE}')
+print(f'Height: {HEIGHT}')
 
 # parse the path of the json config file
 arg_parser = argparse.ArgumentParser(description="")
@@ -70,9 +74,9 @@ config = process_config(args)
 # print(config)
 
 config['device'] = torch.device('cuda:0')
-config.tgt_feat = 20
+config.tgt_feat = 20 #40
 config.rbt_feat = 10
-config.max_epoch = 5000 #3000
+config.max_epoch = 1500 #3000
 config.learning_rate = 0.005
 config.nGraphFilterTaps = 2
 
@@ -85,7 +89,7 @@ timeid = args.timeid
 agent_class = globals()[config.agent]
 agent = agent_class(config)
 
-
+'''
 print('Plotting graphs')
 
 event_acc = EventAccumulator(f'/home/vishnuds/baxterB/multi_robot/gnn_tb_data/dcpOE_map20x20_rho1_{config.num_agents}Agent/K{config.nGraphFilterTaps}_HS0/{timeid}/')
@@ -124,7 +128,7 @@ plt.legend()
 #plt.show()
 plt.savefig('results.png', bbox_inches='tight')
 print('Done plotting')
-
+'''
 ### /home/vishnuds/baxterB/multi_robot/gnn_log_data/experiments/dcpOE_map20x20_rho1_10Agent/K4_HS0/1617748311/
 
 filename = f'{config.save_data}/experiments/dcpOE_map20x20_rho1_{config.num_agents}Agent/K{config.nGraphFilterTaps}_HS0/{timeid}/checkpoints/checkpoint_{config.max_epoch}.pth.tar'
@@ -132,6 +136,7 @@ filename = f'{config.save_data}/experiments/dcpOE_map20x20_rho1_{config.num_agen
 print(f'loading model from: {filename}')
 checkpoint = torch.load(filename, map_location='cuda:{}'.format(agent.config.gpu_device))
 agent.model.load_state_dict(checkpoint['state_dict'])
+agent.model.eval()
 
 ######################################################
 acc, lss = get_acc_n_loss(config, agent, agent.data_loader.train_loader)
