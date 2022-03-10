@@ -102,6 +102,35 @@ def process_config(args):
     config.log_anime = args.log_anime
     config.rate_maxstep = args.rate_maxstep
     config.commR = args.commR
+    
+
+    '''
+    ## UNCOMMENT THIS
+    config.nAttentionHeads = args.nAttentionHeads
+    config.AttentionConcat = args.AttentionConcat
+    config.attentionMode = args.attentionMode
+
+    config.test_num_processes = args.test_num_processes
+    config.use_dropout = args.use_dropout
+    config.batch_numAgent = args.batch_numAgent
+    config.GSO_mode = args.GSO_mode
+    
+    # config.label_smoothing = args.label_smoothing
+    # config.attentionMode = args.attentionMode
+    # config.LSTM_seq_len = args.LSTM_seq_len
+    # config.LSTM_seq_padding = args.LSTM_seq_padding
+
+    config.bottleneckMode = args.bottleneckMode
+    # config.bottleneckFeature = args.bottleneckFeature
+    # config.use_dilated = args.use_dilated
+    # config.use_dilated_version = args.use_dilated_version
+    config.GNNGAT = args.GNNGAT
+    # config.CNN_mode = args.CNN_mode
+    '''
+     
+
+    # config.gpu_device = args.gpu_device
+    
     pprint(config)
 
     # making sure that you have provided the exp_name.

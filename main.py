@@ -79,8 +79,9 @@ def main():
     # parse the config json file
     config = process_config(args)
     
-    config.max_epoch = 5000
+    config.max_epoch = 1500
     config.learning_rate = 0.005
+    # config.tgt_feat = 40
 
     # Create the Agent and pass all the configuration to it then run it..
     agent_class = globals()[config.agent]
