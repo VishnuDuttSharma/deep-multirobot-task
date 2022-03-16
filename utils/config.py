@@ -70,39 +70,42 @@ def process_config(args):
     """
     config, _ = get_config_from_json(args.config)
     print(" THE Configuration of your experiment ..")
-
+    
     config.mode = args.mode
     config.num_agents = args.num_agents
-    config.map_w = args.map_w
-    config.map_h = args.map_w
-    config.map_density = args.map_density
+    # config.map_w = args.map_w
+    # config.map_h = args.map_w
+    # config.map_density = args.map_density
     config.map_type = args.map_type
 
     config.trained_num_agents = args.trained_num_agents
-    config.trained_map_w = args.trained_map_w
-    config.trained_map_h = args.trained_map_w
-    config.trained_map_density = args.trained_map_density
-    config.trained_map_type = args.trained_map_type
+   
+    # config.trained_map_w = args.trained_map_w
+    # config.trained_map_h = args.trained_map_w
+    # config.trained_map_density = args.trained_map_density
+    # config.trained_map_type = args.trained_map_type
 
     config.tgt_feat = args.tgt_feat
     config.rbt_feat = args.rbt_feat
     
     config.nGraphFilterTaps = args.nGraphFilterTaps
-    config.hiddenFeatures = args.hiddenFeatures
+    # config.hiddenFeatures = args.hiddenFeatures
 
-    config.num_testset = args.num_testset
+    # config.num_testset = args.num_testset
 
-    config.con_train = args.con_train
-    config.lastest_epoch = args.lastest_epoch
-    config.best_epoch = args.best_epoch
-    config.test_general = args.test_general
-    config.train_TL = args.train_TL
-    config.test_epoch = args.test_epoch
-    config.Use_infoMode = args.Use_infoMode
-    config.log_anime = args.log_anime
-    config.rate_maxstep = args.rate_maxstep
-    config.commR = args.commR
+    # config.con_train = args.con_train
+    # config.lastest_epoch = args.lastest_epoch
+    # config.best_epoch = args.best_epoch
+    # config.test_general = args.test_general
+    # config.train_TL = args.train_TL
+    # config.test_epoch = args.test_epoch
+    # config.Use_infoMode = args.Use_infoMode
+    # config.log_anime = args.log_anime
+    # config.rate_maxstep = args.rate_maxstep
+    # config.commR = args.commR
     
+    config.log_time_trained = args.log_time_trained
+    config.best_epoch = args.best_epoch
 
     '''
     ## UNCOMMENT THIS
@@ -151,18 +154,19 @@ def process_config(args):
             config.exp_time_load = args.log_time_trained
             log_time = datetime.datetime.now()
             config.exp_time = str(int(time.mktime(log_time.timetuple())))  # + "/"
-            # config.exp_time = log_time.strftime("%H%M-%d%b%Y")
-            # config.exp_time = str(int(time.time()))
+            config.exp_time = log_time.strftime("%H%M-%d%b%Y")
+            config.exp_time = str(int(time.time()))
         else:
             log_time = datetime.datetime.now()
             config.exp_time = str(int(time.mktime(log_time.timetuple()))) #+ "/"
-            # config.exp_time = log_time.strftime("%H%M-%d%b%Y")
-            # config.exp_time = str(int(time.time()))
+            config.exp_time = log_time.strftime("%H%M-%d%b%Y")
+            config.exp_time = str(int(time.time()))
 
     elif config.mode == "test":
         # exp_time = config.log_time
         config.exp_time_load = args.log_time_trained + "/"
         config.exp_time = args.log_time_trained
+        pass
 
     env_Setup = "{}{}x{}_rho{}_{}Agent".format(config.map_type, config.map_w, config.map_w, config.map_density, config.trained_num_agents)
 
@@ -218,6 +222,7 @@ def process_config(args):
                                                 config.num_agents)
 
 
+    '''
     config.result_statistics_dir = os.path.join(config.save_data, label_result_folder, label_Statistics_folder)
     config.result_demo_dir = os.path.join(config.save_data, label_result_folder, 'Demo/{}/'.format(config.exp_name))
     log_str_AnimeDemo = os.path.join('AnimeDemo',config.exp_net, testEnv_Setup, exp_HyperPara, exp_Setup_training,  config.exp_time, 'commR_{}'.format(config.commR))
@@ -233,12 +238,13 @@ def process_config(args):
                  config.result_statistics_dir, config.result_demo_dir,
                  config.result_AnimeDemo_dir_input,config.result_AnimeDemo_dir_predict_success,
                  config.result_AnimeDemo_dir_predict_failure, config.result_AnimeDemo_dir_target, config.result_AnimeDemo_dir_GSO])
-
+    
     # setup logging in the project
     setup_logging(config.log_dir)
 
+    '''
     logging.getLogger().info("Hi, This is root.")
     logging.getLogger().info("After the configurations are successfully processed and dirs are created.")
     logging.getLogger().info("The pipeline of the project will begin now.")
-
+    
     return config
