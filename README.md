@@ -44,6 +44,16 @@ Use the configuration and the time ID (from output log) of the trained model as 
 python get_results.py configs/coverageTask_6rob_6FOV_8STEP_10COMM_3layer_2filtertap_GNN2layer_32_128.json --mode test --num_agents 20 --timeid 1635268525
 ```
 
+For testing the reward coverage performance, generate more datailed data with random configuration:
+```
+python test_data_generation.py --batch_size 1000 --save_path ./test_data_20robot --mode rect
+```
+This script also depends on `constants.py` and the number of robots can be changed in it to generate data with difference number of robots.
+
+The results can be obtained over this data by running the following command (also requires config file path and timeid/log_time_trained):
+```
+python test_coverage.py configs/coverageTask_20rob_FIX_6FOV_20STEP_10COMM_3layer_2filtertap_GNN2layer_32_128.json --log_time_trained 1630851013 --data_path ./test_data_20robot
+```
 
 ### License:
 The project of graph mapf is licensed under MIT License - see the LICENSE file for details
