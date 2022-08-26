@@ -77,8 +77,9 @@ def main():
     args = arg_parser.parse_args()
 
     # parse the config json file
-    config = process_config()
+    config = process_config(args)
     
+    ## If you wish to hardcode
     # config.max_epoch = 1500
     # config.learning_rate = 0.005
     # config.tgt_feat = 40
