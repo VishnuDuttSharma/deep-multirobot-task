@@ -44,6 +44,17 @@ arg_parser.add_argument('--log_time_trained', type=str, default='')
 arg_parser.add_argument('--map_type', type=int, default=0)
 arg_parser.add_argument('--best_epoch', type=int, default=None)
 
+arg_parser.add_argument('--num_testset', type=int, default=4500)
+arg_parser.add_argument('--test_epoch', type=int, default=0)
+arg_parser.add_argument('--lastest_epoch', action='store_true', default=False)
+arg_parser.add_argument('--con_train', action='store_true', default=False)
+arg_parser.add_argument('--test_general', action='store_true', default=False)
+arg_parser.add_argument('--train_TL', action='store_true', default=False)
+arg_parser.add_argument('--Use_infoMode', type=int, default=0)
+arg_parser.add_argument('--log_anime', action='store_true', default=False)
+arg_parser.add_argument('--rate_maxstep', type=int, default=2)
+arg_parser.add_argument('--commR', type=int, default=6)
+
 
 def get_prediction(config, feat_raw, adj_mat, device):
     
