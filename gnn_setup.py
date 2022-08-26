@@ -634,7 +634,7 @@ if __name__ == '__main__':
     print(f'Comm Range: {COMM_RANGE}')
     print(f'FoV: {FOV}')
     print(f'Step size: {STEP}')
-    print(f'#Robot in target: {NUM_TGT_FEAT}')
+    print(f'#Targets in feat: {NUM_TGT_FEAT}')
     print(f'#Robot in feat: {NUM_ROB_FEAT}')
     print('--------------------------------------')
 
