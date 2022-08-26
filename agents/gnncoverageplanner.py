@@ -130,6 +130,7 @@ class CoveragePlannerAgentLocal(BaseAgent):
         }
 
         # Save the state
+        os.makedirs(self.config.checkpoint_dir, exist_ok = True)
         torch.save(state, os.path.join(self.config.checkpoint_dir, file_name))
         # If it is the best copy it to another file 'model_best.pth.tar'
         if is_best:
@@ -246,12 +247,13 @@ class CoveragePlannerAgentLocal(BaseAgent):
             print('Train {} on Epoch {} Learning Rate: {}'.format(self.config.exp_name, self.current_epoch, self.scheduler.get_lr()))
 
             rateReachGoal = 0.0
-            if self.config.num_agents >= 10:
-                #if epoch % self.config.validate_every == 0:
-                if epoch % 500 == 0:
+            if self.config.num_agents >= 1:
+                if epoch % self.config.validate_every == 0:
+                    print('Testing')
+                    self.test_step()
+                if epoch % 500 == 0 or epoch == self.config.max_epoch:
                     # rateReachGoal = self.test(self.config.mode)
                     # self.test('test_trainingSet')
-                    self.test_step()
                     self.save_checkpoint(epoch, lastest=False)
             else:
                 if epoch <= 4:
