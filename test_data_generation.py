@@ -3,8 +3,8 @@ import numpy as np
 import argparse
 from tqdm import tqdm
 import pickle
-
-from constants import *
+import os
+from dataloader.constants import *
 
 np.random.seed(2343)
 
@@ -652,7 +652,8 @@ if __name__ == '__main__':
     #     pickle.dump(generate_data(args.batch_size), open(f'{args.save_path}/data_{i+1}.pkl', 'wb'))
 
     grid_data, robot_pos_data, time_data, action_data, model_data = generate_data(args.batch_size, args.mode)
-
+    
+    os.makedirs(args.save_path, exist_ok = True)
     pickle.dump(grid_data, open(f'{args.save_path}/grid_data.pkl', 'wb'))
     pickle.dump(robot_pos_data, open(f'{args.save_path}/robot_pos_data.pkl', 'wb'))
     pickle.dump(time_data, open(f'{args.save_path}/time_data.pkl', 'wb'))
