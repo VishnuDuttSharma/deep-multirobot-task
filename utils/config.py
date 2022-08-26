@@ -89,16 +89,17 @@ def process_config(args):
     config.rbt_feat = args.rbt_feat
     
     config.nGraphFilterTaps = args.nGraphFilterTaps
+    print('Checking ', config.nGraphFilterTaps, args.nGraphFilterTaps)
     # config.hiddenFeatures = args.hiddenFeatures
 
     # config.num_testset = args.num_testset
 
-    # config.con_train = args.con_train
-    # config.lastest_epoch = args.lastest_epoch
-    # config.best_epoch = args.best_epoch
-    # config.test_general = args.test_general
-    # config.train_TL = args.train_TL
-    # config.test_epoch = args.test_epoch
+    config.con_train = args.con_train
+    config.lastest_epoch = args.lastest_epoch
+    config.best_epoch = args.best_epoch
+    config.test_general = args.test_general
+    config.train_TL = args.train_TL
+    config.test_epoch = args.test_epoch
     # config.Use_infoMode = args.Use_infoMode
     # config.log_anime = args.log_anime
     # config.rate_maxstep = args.rate_maxstep
