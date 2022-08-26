@@ -49,7 +49,7 @@ This script also depends on `constants.py` and the number of robots can be chang
 #### Testing the model
 The results can be obtained over this data by running the following command (requires config file path, time ID (from output log) and timeid/log_time_trained):
 ```
-python test_coverage.py configs/coverageTask_20rob_FIX_6FOV_20STEP_10COMM_3layer_2filtertap_GNN2layer_32_128.json --log_time_trained 1630851013 --data_path ./test_data_20robot
+python test_coverage.py configs/coverageTask_20rob_FIX_6FOV_20STEP_10COMM_3layer_2filtertap_GNN2layer_32_128.json --log_time_trained 1630851013 --nGraphFilterTaps 2 --data_path ./test_data_20robot
 ```
 
 
