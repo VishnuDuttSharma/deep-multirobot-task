@@ -30,6 +30,8 @@ python -u gnn_setup.py --batch_size 2000 --save_path ./robot20_data/ --mode rect
 ```
 This command generates 100 files each containing `batch_size` examples each. First 60 files are used for training, next 20 for validation, and the rest for testing.
 
+You could also use the already generated data by clicking on [this link](https://obj.umiacs.umd.edu/publicdata/gnn_planner_data/gnn_training_data.zip).
+
 #### Train a new network
 1. Create/update the configuration file to reflect the correct path to the training data and parameters (`data_root`, `save_data`, `save_tb_data`, `max_epoch`) 
 ```
@@ -37,6 +39,7 @@ python main.py configs/coverageTask_20rob_FIX_6FOV_20STEP_10COMM_3layer_2filtert
 ```
 The command above trains the model with 2 filter taps i.e. 1-hop.
 
+The pre-trained network can be downloaded by clicking [here](https://obj.umiacs.umd.edu/publicdata/gnn_planner_data/checkpoint_1500.pth.tar). The best way to use it is to put the model in the experiment checckpoint directory. Else, you can change the model path in [Line 98 of test_model_loader.py](https://github.com/VishnuDuttSharma/deep-multirobot-task/blob/main/test_model_loader.py#L98).
 
 #### Test data generation
 For testing the reward coverage performance, generate more datailed data with random configuration:
