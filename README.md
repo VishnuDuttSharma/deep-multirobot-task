@@ -2,7 +2,7 @@
 Code accompanying the paper
 [Graph Neural Networks for Decentralized Multi-Robot Submodular Action Selection](https://arxiv.org/abs/2105.08601) 
 
-from Lifeng Zhou<sup>1</sup>, Vishnu D. Sharma<sup>2</sup>, Qingbiao Li<sup>3</sup>, Amanda Prorok<sup>3</sup>, Alejandro Ribeiro<sup>1</sup>, Vijay Kumar<sup>1</sup>
+from Lifeng Zhou<sup>1</sup>, Vishnu D. Sharma<sup>2</sup>, Qingbiao Li<sup>3</sup>, Amanda Prorok<sup>3</sup>, Alejandro Ribeiro<sup>1</sup>, Pratap Tokekar<sup>2</sup>, Vijay Kumar<sup>1</sup>
 at the (1) University of Pennsylvania, (2) University of Maryland, and (3) University of Cambridge.
 
 The code here is based on the [PyTorch Project for Graph Neural Network based MAPF](https://github.com/proroklab/gnn_pathplanning) by [Qingbiao Li](https://github.com/QingbiaoLi).
